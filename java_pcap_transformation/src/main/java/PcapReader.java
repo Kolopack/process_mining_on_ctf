@@ -8,6 +8,7 @@ import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 
 public class PcapReader {
 
@@ -27,9 +28,10 @@ public class PcapReader {
                         if(buffer!=null) {
                             System.out.println("TCP: "+buffer);
                         }*/
+                        Timestamp timestamp= new Timestamp(tcpPacket.getArrivalTime()/1000);
 
                         System.out.println("Name: "+tcpPacket.getName());
-                        System.out.println("Timestamp: ");
+                        System.out.println("TimestampTCP: "+timestamp);
                         System.out.println("Source-Host: "+ipPacket.getSourceIP());
                         System.out.println("Destination-Host: "+ipPacket.getDestinationIP());
                         System.out.println("Source-Port: "+tcpPacket.getSourcePort());
@@ -56,4 +58,6 @@ public class PcapReader {
             e.printStackTrace();
         }
     }
+
+    //private
 }
