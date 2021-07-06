@@ -8,11 +8,17 @@ import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 
 public class PcapReader {
 
     public static void main(String[] args) {
+        String filePath="./target/";
+        String fileName="testXML";
+        XESManager manager=new XESManager(filePath,fileName);
+/*
         try {
             final Pcap pcap=Pcap.openStream("src/main/resources/ictf2010.pcap1");
 
@@ -28,7 +34,7 @@ public class PcapReader {
                         if(buffer!=null) {
                             System.out.println("TCP: "+buffer);
                         }*/
-                        Timestamp timestamp= new Timestamp(tcpPacket.getArrivalTime()/1000);
+         /*               Timestamp timestamp= new Timestamp(tcpPacket.getArrivalTime()/1000);
 
                         System.out.println("Name: "+tcpPacket.getName());
                         System.out.println("TimestampTCP: "+timestamp);
@@ -45,7 +51,7 @@ public class PcapReader {
                             System.out.println("UDP: "+buffer);
                         }*/
 
-                        System.out.println("Name: "+udpPacket.getName());
+              /*          System.out.println("Name: "+udpPacket.getName());
                         System.out.println("Source-Host: "+ipPacket.getSourceIP());
                         System.out.println("Destination-Host: "+ipPacket.getDestinationIP());
                         System.out.println("Source-Port: "+udpPacket.getSourcePort());
@@ -56,7 +62,7 @@ public class PcapReader {
             });
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     //private
