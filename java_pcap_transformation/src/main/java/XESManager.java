@@ -45,11 +45,18 @@ public class XESManager {
        log.setAttribute("xes.features","nested-attributes");
        log.setAttribute("xmlns","http://www.xes-standard.org/");
        document.appendChild(log);
-        setupExtensions(log);
+       setupExtensions(log);
+       setupGlobals(log);
     }
 
     private void setupExtensions(Element log) {
        setupConceptExtension(log);
+       setupTimeExtension(log);
+    }
+
+    private void setupGlobals(Element log) {
+        setupGlobalTrace(log);
+        setupGlobalEvent(log);
     }
 
     private void setupConceptExtension(Element log) {
@@ -66,6 +73,30 @@ public class XESManager {
        extensionTime.setAttribute("name","Time");
        extensionTime.setAttribute("prefix","time");
        extensionTime.setAttribute("uri","http://www.xes-standard.org/time.xesext");
+
+       log.appendChild(extensionTime);
+    }
+
+    private void setupGlobalTrace(Element log) {
+       Element globalTrace=document.createElement("global");
+       globalTrace.setAttribute("scope","trace");
+       Element string=document.createElement("string");
+       string.setAttribute("key","concept:name");
+       string.setAttribute("value","");
+       globalTrace.appendChild(string);
+
+       log.appendChild(globalTrace);
+    }
+
+    private void setupGlobalEvent(Element log) {
+       Element globalEvent=document.createElement("global");
+       globalEvent.setAttribute("scope","event");
+       Element dateTag=document.createElement("date");
+       dateTag.setAttribute("key","time:timestamp");
+       dateTag.setAttribute("value","1970-01-01T00:00:00.000+00:00");
+       globalEvent.appendChild(dateTag);
+
+       log.appendChild(globalEvent);
     }
 
     private void createXESFile() {
