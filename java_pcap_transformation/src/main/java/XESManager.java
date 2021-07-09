@@ -1,6 +1,9 @@
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -110,10 +113,41 @@ public class XESManager {
             transformer.transform(source,result);
         } catch (FileNotFoundException e) {
             logger.severe(e.getMessage());
+
         } catch (TransformerConfigurationException e) {
             logger.severe(e.getMessage());
         } catch (IOException | TransformerException e) {
             logger.severe(e.getMessage());
         }
+    }
+
+    private void addNewTraceElement(Element trace) {
+        modifyFileForAdding();
+        addTrace(trace);
+        createXESFile();
+    }
+
+    private void modifyFileForAdding() {
+       documentBuilderFactory=DocumentBuilderFactory.newInstance();
+       try(InputStream inputStream=new FileInputStream(filePath.toString())) {
+            documentBuilder=documentBuilderFactory.newDocumentBuilder();
+            document=documentBuilder.parse(inputStream);
+
+
+       } catch (FileNotFoundException e) {
+           e.printStackTrace();
+       } catch (IOException e) {
+           e.printStackTrace();
+       } catch (ParserConfigurationException e) {
+           e.printStackTrace();
+       } catch (SAXException e) {
+           e.printStackTrace();
+       }
+    }
+
+    private void addTrace(Element trace) {
+        NodeList allLog=document.getElementsByTagName("log");
+        Node log=allLog.item(0);
+        log.appendChild(trace);
     }
 }
