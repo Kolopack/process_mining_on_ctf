@@ -1,18 +1,13 @@
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
-import io.pkts.buffer.Buffer;
-import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
-import io.pkts.packet.TCPPacket;
-import io.pkts.packet.UDPPacket;
-import io.pkts.protocol.Protocol;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.logging.Logger;
 
 public class PcapReader {
@@ -20,14 +15,16 @@ public class PcapReader {
     private static final String pcapEnding=".*\\.pcap.*";
 
     private File directoryPath;
+    private Path temporaryStoringPath;
     private File[] fileList;
 
-    public void read(String pathToDirectory) {
+    public void importPcap(String pathToDirectory, String temporarySavingDirectory) {
         directoryPath=new File(pathToDirectory);
-        readAllFiles();
+        temporaryStoringPath= Paths.get(temporarySavingDirectory);
+        importFilepath();
     }
 
-    private void readAllFiles() {
+    private void importFilepath() {
         fileList=directoryPath.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -37,10 +34,33 @@ public class PcapReader {
         });
         printOutFileList();
     }
-
+    //Just for testing-purposes
     private void printOutFileList() {
         for(File file : fileList) {
             System.out.println("File-Name: "+file.getName());
+        }
+    }
+
+    public void readFiles() {
+        for(File file : fileList) {
+            filterPCAP(file.getPath());
+        }
+    }
+
+    private void filterPCAP(String filePath) {
+        try {
+            Pcap pcap = Pcap.openStream(filePath);
+            pcap.loop(new PacketHandler() {
+                @Override
+                public boolean nextPacket(Packet packet) throws IOException {
+                    //TODO: Filtern for certain Services/cases and delegate them to the classes responsible
+                    return false;
+                }
+            });
+        } catch (FileNotFoundException e) {
+            logger.severe(e.getMessage());
+        } catch (IOException e) {
+            logger.severe(e.getMessage());
         }
     }
 
