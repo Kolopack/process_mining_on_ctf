@@ -1,3 +1,5 @@
+package scanning;
+
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.packet.Packet;
@@ -69,7 +71,7 @@ public class PcapReader {
 
         String filePath="./target/";
         String fileName="testXML";
-        XESManager manager=new XESManager(filePath,fileName);
+        xeshandling.XESManager manager=new xeshandling.XESManager(filePath,fileName);
 
         try {
             final Pcap pcap=Pcap.openStream("src/main/resources/ictf2010.pcap1");
