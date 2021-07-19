@@ -1,3 +1,5 @@
+package packets;
+
 public class UdpPacket {
     private String name;
     private String sourceIP;

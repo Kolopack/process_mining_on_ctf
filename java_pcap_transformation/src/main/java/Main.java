@@ -8,5 +8,6 @@ public class Main {
     public static void main(String[] args) {
         PcapReader reader=new PcapReader();
         reader.importPcap(pcapFilesDirectory, temporarySystemFolder);
+        reader.readFiles("10.13.146.0","10.14.1.9");
     }
 }

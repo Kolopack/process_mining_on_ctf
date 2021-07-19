@@ -2,7 +2,12 @@ package scanning;
 
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
+import io.pkts.buffer.Buffer;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
+import io.pkts.packet.TCPPacket;
+import io.pkts.packet.UDPPacket;
+import io.pkts.protocol.Protocol;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,6 +15,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.logging.Logger;
 
 public class PcapReader {
@@ -43,19 +49,30 @@ public class PcapReader {
         }
     }
 
-    public void readFiles() {
+    public void readFiles(String ipTeam, String ipService) {
         for(File file : fileList) {
-            filterPCAP(file.getPath());
+            filterPCAP(file.getPath(),ipTeam,ipService);
         }
     }
 
-    private void filterPCAP(String filePath) {
+    private void filterPCAP(String filePath, String ipTeam, String ipService) {
         try {
             Pcap pcap = Pcap.openStream(filePath);
             pcap.loop(new PacketHandler() {
                 @Override
                 public boolean nextPacket(Packet packet) throws IOException {
                     //TODO: Filtern for certain Services/cases and delegate them to the classes responsible
+                    if(packet.hasProtocol(Protocol.IPv4)) {
+                        IPPacket ipPacket=(IPPacket) packet.getPacket(Protocol.IPv4);
+                        if(iPisSenderOrReceiver(ipPacket,ipTeam) && iPisSenderOrReceiver(ipPacket,ipService)) {
+                            if(packet.hasProtocol(Protocol.TCP)) {
+                                TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
+                            }
+                            /*if(packet.hasProtocol(Protocol.UDP)) {
+                                UDPPacket udpPacket=(UDPPacket) packet.getPacket(Protocol.UDP);
+                            }*/
+                        }
+                    }
                     return false;
                 }
             });
@@ -66,7 +83,14 @@ public class PcapReader {
         }
     }
 
-    /*public static void main(String[] args) {
+    private boolean iPisSenderOrReceiver(IPPacket packet, String ipAdress) {
+        if(packet.getDestinationIP().equals(ipAdress) || packet.getSourceIP().equals(ipAdress)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
 
 
         String filePath="./target/";
@@ -74,29 +98,28 @@ public class PcapReader {
         xeshandling.XESManager manager=new xeshandling.XESManager(filePath,fileName);
 
         try {
-            final Pcap pcap=Pcap.openStream("src/main/resources/ictf2010.pcap1");
+            final Pcap pcap = Pcap.openStream("src/main/resources/ictf2010.pcap1");
 
             pcap.loop(new PacketHandler() {
                 @Override
                 public boolean nextPacket(Packet packet) throws IOException {
-                    IPPacket ipPacket=(IPPacket) packet.getPacket(Protocol.IPv4);
+                    IPPacket ipPacket = (IPPacket) packet.getPacket(Protocol.IPv4);
 
-                    if(packet.hasProtocol(Protocol.TCP)) {
-                        TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
-
+                    if (packet.hasProtocol(Protocol.TCP)) {
+                        TCPPacket tcpPacket = (TCPPacket) packet.getPacket(Protocol.TCP);
+                        //System.out.println("Payload: "+);
                         /*Buffer buffer=tcpPacket.getPayload();
                         if(buffer!=null) {
                             System.out.println("TCP: "+buffer);
                         }*/
-         /*               Timestamp timestamp= new Timestamp(tcpPacket.getArrivalTime()/1000);
-
+                        Timestamp timestamp= new Timestamp(tcpPacket.getArrivalTime()/1000);
                         System.out.println("Name: "+tcpPacket.getName());
                         System.out.println("TimestampTCP: "+timestamp);
                         System.out.println("Source-Host: "+ipPacket.getSourceIP());
                         System.out.println("Destination-Host: "+ipPacket.getDestinationIP());
                         System.out.println("Source-Port: "+tcpPacket.getSourcePort());
                         System.out.println("Destination-Port:"+tcpPacket.getDestinationPort());
-                        //System.out.println(packet.getPacket(Protocol.TCP).getPayload());
+
                     }
                     else if(packet.hasProtocol(Protocol.UDP)) {
                         UDPPacket udpPacket=(UDPPacket) packet.getPacket(Protocol.UDP);
@@ -105,7 +128,7 @@ public class PcapReader {
                             System.out.println("UDP: "+buffer);
                         }*/
 
-              /*          System.out.println("Name: "+udpPacket.getName());
+                        System.out.println("Name: "+udpPacket.getName());
                         System.out.println("Source-Host: "+ipPacket.getSourceIP());
                         System.out.println("Destination-Host: "+ipPacket.getDestinationIP());
                         System.out.println("Source-Port: "+udpPacket.getSourcePort());
@@ -117,7 +140,5 @@ public class PcapReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }*/
-
-    //private
+    }
 }
