@@ -1,9 +1,10 @@
 package packets;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
-public class PcapPacket {
+public class PcapPacket implements Serializable {
     //IP-related parameters
     private int identification;
     private String ipSender;
@@ -21,31 +22,49 @@ public class PcapPacket {
     private long ackNumber;
     private HashMap<String, Boolean> tcpFlags;
 
-    public PcapPacket(int identification,
-                      String ipSender,
-                      String ipReceiver,
-                      Timestamp arrivalTime,
-                      short fragmentOffset,
-                      int ipHeaderLength,
-                      byte[] iPPayload,
-                      int portSender,
-                      int portReceiver,
-                      byte[] tcpPayload,
-                      long seqNumber,
-                      long ackNumber,
-                      HashMap<String, Boolean> tcpFlags) {
+    public PcapPacket(int identification, String ipSender, String ipReceiver) {
         this.identification = identification;
         this.ipSender = ipSender;
         this.ipReceiver = ipReceiver;
+    }
+
+    public void setArrivalTime(Timestamp arrivalTime) {
         ArrivalTime = arrivalTime;
+    }
+
+    public void setFragmentOffset(short fragmentOffset) {
         this.fragmentOffset = fragmentOffset;
+    }
+
+    public void setIpHeaderLength(int ipHeaderLength) {
         this.ipHeaderLength = ipHeaderLength;
+    }
+
+    public void setiPPayload(byte[] iPPayload) {
         this.iPPayload = iPPayload;
+    }
+
+    public void setPortSender(int portSender) {
         this.portSender = portSender;
+    }
+
+    public void setPortReceiver(int portReceiver) {
         this.portReceiver = portReceiver;
+    }
+
+    public void setTcpPayload(byte[] tcpPayload) {
         this.tcpPayload = tcpPayload;
+    }
+
+    public void setSeqNumber(long seqNumber) {
         this.seqNumber = seqNumber;
+    }
+
+    public void setAckNumber(long ackNumber) {
         this.ackNumber = ackNumber;
+    }
+
+    public void setTcpFlags(HashMap<String, Boolean> tcpFlags) {
         this.tcpFlags = tcpFlags;
     }
 }

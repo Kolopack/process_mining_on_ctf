@@ -1,5 +1,6 @@
 package scanning;
 
+import converters.PacketConverter;
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.buffer.Buffer;
@@ -8,6 +9,7 @@ import io.pkts.packet.Packet;
 import io.pkts.packet.TCPPacket;
 import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
+import packets.PcapPacket;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,6 +69,8 @@ public class PcapReader {
                         if(iPisSenderOrReceiver(ipPacket,ipTeam) && iPisSenderOrReceiver(ipPacket,ipService)) {
                             if(packet.hasProtocol(Protocol.TCP)) {
                                 TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
+
+                                PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
                             }
                             /*if(packet.hasProtocol(Protocol.UDP)) {
                                 UDPPacket udpPacket=(UDPPacket) packet.getPacket(Protocol.UDP);
@@ -119,7 +123,6 @@ public class PcapReader {
                         System.out.println("Destination-Host: "+ipPacket.getDestinationIP());
                         System.out.println("Source-Port: "+tcpPacket.getSourcePort());
                         System.out.println("Destination-Port:"+tcpPacket.getDestinationPort());
-
                     }
                     else if(packet.hasProtocol(Protocol.UDP)) {
                         UDPPacket udpPacket=(UDPPacket) packet.getPacket(Protocol.UDP);
