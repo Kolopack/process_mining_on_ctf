@@ -20,15 +20,20 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class PcapReader {
     Logger logger=Logger.getLogger(PcapReader.class.getName());
     private static final String pcapEnding=".*\\.pcap.*";
+    //private static final String pcapEnding="ictf2010.pcap31";
 
     private File directoryPath;
     private Path temporaryStoringPath;
-    private File[] fileList;
+    private List<File> fileList;
     private InetAddress ipService;
     private InetAddress ipTeam;
     private int packetCounter;
@@ -41,13 +46,14 @@ public class PcapReader {
     }
 
     private void importFilepath() {
-        fileList=directoryPath.listFiles(new FilenameFilter() {
+        File[] fileArray=directoryPath.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.matches(pcapEnding);
-                //return name.endsWith(pcapEnding);
             }
         });
+        fileList= Arrays.asList(fileArray);
+        //sortFileListNumerically();
         printOutFileList();
     }
     //Just for testing-purposes
@@ -56,6 +62,21 @@ public class PcapReader {
             System.out.println("File-Name: "+file.getName());
         }
     }
+
+    /*private void sortFileListNumerically() {
+        Collections.sort(fileList, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                String o1Name=o1.getName().substring(o1.getName().lastIndexOf(".")+1);
+                String o2Name=o2.getName().substring(o2.getName().lastIndexOf(".")+1);
+
+                int compareO1=Integer.parseInt(o1Name);
+                int compareO2=Integer.parseInt(o2Name);
+
+                return  compareO1-compareO2;
+            }
+        });
+    }*/
 
     public void readFiles(InetAddress ipTeam, InetAddress ipService) {
         this.ipTeam=ipTeam;
@@ -82,6 +103,7 @@ public class PcapReader {
                         InetAddress ipDestination=InetAddress.getByName(ipPacket.getDestinationIP());
 
                         if(iPisSenderOrReceiver(ipSource,ipDestination)) {
+                            System.out.println("packet spotted");
                             if(packet.hasProtocol(Protocol.TCP)) {
                                 //TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
                                 ++packetTcpCounter;
