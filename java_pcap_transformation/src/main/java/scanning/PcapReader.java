@@ -1,6 +1,8 @@
 package scanning;
 
 import converters.PacketConverter;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.buffer.Buffer;
@@ -17,6 +19,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -27,39 +30,43 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class PcapReader {
-    Logger logger=Logger.getLogger(PcapReader.class.getName());
+    Logger logger = Logger.getLogger(PcapReader.class.getName());
     private static final String pcapEnding=".*\\.pcap.*";
-    //private static final String pcapEnding="ictf2010.pcap31";
+    //private static final String pcapEnding = "ictf2010.pcap31";
 
     private File directoryPath;
     private Path temporaryStoringPath;
     private List<File> fileList;
+
     private InetAddress ipService;
     private InetAddress ipTeam;
+    private String ipTeamMask;
+
     private int packetCounter;
     private int packetTcpCounter;
 
     public void importPcap(String pathToDirectory, String temporarySavingDirectory) {
-        directoryPath=new File(pathToDirectory);
-        temporaryStoringPath= Paths.get(temporarySavingDirectory);
+        directoryPath = new File(pathToDirectory);
+        temporaryStoringPath = Paths.get(temporarySavingDirectory);
         importFilepath();
     }
 
     private void importFilepath() {
-        File[] fileArray=directoryPath.listFiles(new FilenameFilter() {
+        File[] fileArray = directoryPath.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.matches(pcapEnding);
             }
         });
-        fileList= Arrays.asList(fileArray);
+        fileList = Arrays.asList(fileArray);
         //sortFileListNumerically();
         printOutFileList();
     }
+
     //Just for testing-purposes
     private void printOutFileList() {
-        for(File file : fileList) {
-            System.out.println("File-Name: "+file.getName());
+        for (File file : fileList) {
+            System.out.println("File-Name: " + file.getName());
         }
     }
 
@@ -78,13 +85,14 @@ public class PcapReader {
         });
     }*/
 
-    public void readFiles(InetAddress ipTeam, InetAddress ipService) {
-        this.ipTeam=ipTeam;
-        this.ipService=ipService;
+    public void readFiles(InetAddress ipTeam, String ipTeamMask, InetAddress ipService) {
+        this.ipTeam = ipTeam;
+        this.ipTeamMask=ipTeamMask;
+        this.ipService = ipService;
 
-        for(File file : fileList) {
-            filterPCAP(file.getPath(),ipTeam,ipService);
-            logger.info("File: "+file.getName()+" finished. "+packetCounter+"/"+packetTcpCounter+" total/TCP");
+        for (File file : fileList) {
+            filterPCAP(file.getPath(), ipTeam, ipService);
+            logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + packetTcpCounter + " total/TCP");
         }
     }
 
@@ -96,18 +104,18 @@ public class PcapReader {
                 public boolean nextPacket(Packet packet) throws IOException {
                     ++packetCounter;
 
-                    if(packet.hasProtocol(Protocol.IPv4)) {
-                        IPPacket ipPacket=(IPPacket) packet.getPacket(Protocol.IPv4);
+                    if (packet.hasProtocol(Protocol.IPv4)) {
+                        IPPacket ipPacket = (IPPacket) packet.getPacket(Protocol.IPv4);
 
-                        InetAddress ipSource=InetAddress.getByName(ipPacket.getSourceIP());
-                        InetAddress ipDestination=InetAddress.getByName(ipPacket.getDestinationIP());
+                        InetAddress ipSource = InetAddress.getByName(ipPacket.getSourceIP());
+                        InetAddress ipDestination = InetAddress.getByName(ipPacket.getDestinationIP());
 
-                        if(iPisSenderOrReceiver(ipSource,ipDestination)) {
+                        if (iPisSenderOrReceiver(ipSource, ipDestination)) {
                             System.out.println("packet spotted");
-                            if(packet.hasProtocol(Protocol.TCP)) {
-                                //TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
+                            if (packet.hasProtocol(Protocol.TCP)) {
+                                TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
                                 ++packetTcpCounter;
-                                //PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
+                                PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
                             }
                         }
                     }
@@ -122,12 +130,37 @@ public class PcapReader {
     }
 
     private boolean iPisSenderOrReceiver(InetAddress ipSource, InetAddress ipDestination) {
-        if(ipSource.equals(ipService) && ipDestination.equals(ipTeam)) {
+        if (ipSource.equals(ipService) && isInSameNetwork(ipDestination,ipTeam)) {
             return true;
         }
-        if(ipSource.equals(ipTeam) && ipDestination.equals(ipService)) {
+        if (isInSameNetwork(ipSource,ipTeam) && ipDestination.equals(ipService)) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Method for checking if two InetAdress IpAddresses are in the same network.
+     * CITE: Fundamental idea taken from:
+     * https://stackoverflow.com/questions/8555847/test-with-java-if-two-ips-are-in-the-same-network
+     * @param firstAddress
+     * @param secondAddress
+     * @return boolean if they are in the same network or not
+     */
+    private boolean isInSameNetwork(InetAddress firstAddress, InetAddress secondAddress) {
+        try {
+            byte[] first = firstAddress.getAddress();
+            byte[] second = secondAddress.getAddress();
+            byte[] temp = InetAddress.getByName(ipTeamMask).getAddress();
+
+            for (int i = 0; i < first.length; i++) {
+                if ((first[i] & temp[i]) != (second[i] & temp[i])) {
+                    return false;
+                }
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 }

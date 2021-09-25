@@ -4,6 +4,7 @@ import io.pkts.packet.IPPacket;
 import io.pkts.packet.TCPPacket;
 import packets.PcapPacket;
 
+import java.nio.Buffer;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Optional;
@@ -30,10 +31,24 @@ public class PacketConverter {
         result.setAckNumber(tcpPacket.getAcknowledgementNumber());
 
         Optional<byte[]> ipPayload= Optional.of(ipPacket.getPayload().getArray());
-        result.setiPPayload(ipPayload.get());
+        if(ipPayload.isPresent()) {
+            result.setiPPayload(ipPayload.get());
+        }
+        else {
+            result.setiPPayload(null);
+        }
 
-        Optional<byte[]> tcpPayload=Optional.of(tcpPacket.getPayload().getArray());
-        result.setTcpPayload(tcpPayload.get());
+        Optional<Buffer> tcpPayload=Optional.of(tcpPacket.getPayload());
+        if(tcpPayload.isPresent()) {
+            byte[] tcpPayloadArray=tcpPayload.get().getArray();
+        }
+        Optional<byte[]> tcpPayloadArray=Optional.of(tcpPacket.getPayload().getArray());
+        if(tcpPayload.isPresent()) {
+            result.setTcpPayload(tcpPayload.get());
+        }
+        else {
+            result.setTcpPayload(null);
+        }
 
         HashMap<String, Boolean> flags=getFlagMap(tcpPacket);
         result.setTcpFlags(flags);
