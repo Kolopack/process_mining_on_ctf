@@ -1,5 +1,3 @@
-import inet.ipaddr.IPAddress;
-import inet.ipaddr.IPAddressString;
 import scanning.PcapReader;
 
 import java.net.InetAddress;

@@ -1,15 +1,11 @@
 package scanning;
 
 import converters.PacketConverter;
-import inet.ipaddr.IPAddress;
-import inet.ipaddr.IPAddressString;
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
-import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TCPPacket;
-import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
 import packets.PcapPacket;
 
@@ -17,12 +13,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,8 +25,8 @@ import java.util.logging.Logger;
 
 public class PcapReader {
     Logger logger = Logger.getLogger(PcapReader.class.getName());
-    private static final String pcapEnding=".*\\.pcap.*";
-    //private static final String pcapEnding = "ictf2010.pcap31";
+    //private static final String pcapEnding=".*\\.pcap.*";
+    private static final String pcapEnding = "ictf2010.pcap31";
 
     private File directoryPath;
     private Path temporaryStoringPath;
@@ -43,7 +37,7 @@ public class PcapReader {
     private String ipTeamMask;
 
     private int packetCounter;
-    private int packetTcpCounter;
+    private int importantPacket;
 
     public void importPcap(String pathToDirectory, String temporarySavingDirectory) {
         directoryPath = new File(pathToDirectory);
@@ -59,7 +53,7 @@ public class PcapReader {
             }
         });
         fileList = Arrays.asList(fileArray);
-        //sortFileListNumerically();
+        sortFileListNumerically();
         printOutFileList();
     }
 
@@ -70,12 +64,12 @@ public class PcapReader {
         }
     }
 
-    /*private void sortFileListNumerically() {
+    private void sortFileListNumerically() {
         Collections.sort(fileList, new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
-                String o1Name=o1.getName().substring(o1.getName().lastIndexOf(".")+1);
-                String o2Name=o2.getName().substring(o2.getName().lastIndexOf(".")+1);
+                String o1Name=o1.getName().replaceAll("[^0-9]","");
+                String o2Name=o2.getName().replaceAll("[^0-9]","");
 
                 int compareO1=Integer.parseInt(o1Name);
                 int compareO2=Integer.parseInt(o2Name);
@@ -83,7 +77,7 @@ public class PcapReader {
                 return  compareO1-compareO2;
             }
         });
-    }*/
+    }
 
     public void readFiles(InetAddress ipTeam, String ipTeamMask, InetAddress ipService) {
         this.ipTeam = ipTeam;
@@ -92,7 +86,7 @@ public class PcapReader {
 
         for (File file : fileList) {
             filterPCAP(file.getPath(), ipTeam, ipService);
-            logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + packetTcpCounter + " total/TCP");
+            logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + importantPacket + " total/TCP");
         }
     }
 
@@ -114,8 +108,12 @@ public class PcapReader {
                             System.out.println("packet spotted");
                             if (packet.hasProtocol(Protocol.TCP)) {
                                 TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
-                                ++packetTcpCounter;
+                                ++importantPacket;
+                                if(tcpPacket==null) {
+                                    System.out.println("But TCP-Packet is null.");
+                                }
                                 PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
+                                System.out.println(myPacket);
                             }
                         }
                     }

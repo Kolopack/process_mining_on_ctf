@@ -2,6 +2,7 @@ package packets;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class PcapPacket implements Serializable {
@@ -66,5 +67,24 @@ public class PcapPacket implements Serializable {
 
     public void setTcpFlags(HashMap<String, Boolean> tcpFlags) {
         this.tcpFlags = tcpFlags;
+    }
+
+    @Override
+    public String toString() {
+        return "PcapPacket{" +
+                "identification=" + identification +
+                ", ipSender='" + ipSender + '\'' +
+                ", ipReceiver='" + ipReceiver + '\'' +
+                ", ArrivalTime=" + ArrivalTime +
+                ", fragmentOffset=" + fragmentOffset +
+                ", ipHeaderLength=" + ipHeaderLength +
+                ", iPPayload=" + Arrays.toString(iPPayload) +
+                ", portSender=" + portSender +
+                ", portReceiver=" + portReceiver +
+                ", tcpPayload=" + Arrays.toString(tcpPayload) +
+                ", seqNumber=" + seqNumber +
+                ", ackNumber=" + ackNumber +
+                ", tcpFlags=" + tcpFlags +
+                '}';
     }
 }

@@ -3,6 +3,7 @@ package converters;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.TCPPacket;
 import packets.PcapPacket;
+import packets.TcpPacket;
 
 import java.nio.Buffer;
 import java.sql.Timestamp;
@@ -38,21 +39,18 @@ public class PacketConverter {
             result.setiPPayload(null);
         }
 
-        Optional<Buffer> tcpPayload=Optional.of(tcpPacket.getPayload());
-        if(tcpPayload.isPresent()) {
-            byte[] tcpPayloadArray=tcpPayload.get().getArray();
+        Optional<TCPPacket> tcpPacketOptional=Optional.of(tcpPacket);
+        if(tcpPacketOptional.isPresent()) {
+            if(tcpPacketOptional.get().getPayload()!=null) {
+                Optional<byte[]> tcpPayloadArray=Optional.of(tcpPacketOptional.get().getPayload().getArray());
+                result.setTcpPayload(tcpPayloadArray.get());
+            }
+            else {
+                result.setTcpPayload(null);
+            }
+            HashMap<String, Boolean> flags=getFlagMap(tcpPacket);
+            result.setTcpFlags(flags);
         }
-        Optional<byte[]> tcpPayloadArray=Optional.of(tcpPacket.getPayload().getArray());
-        if(tcpPayload.isPresent()) {
-            result.setTcpPayload(tcpPayload.get());
-        }
-        else {
-            result.setTcpPayload(null);
-        }
-
-        HashMap<String, Boolean> flags=getFlagMap(tcpPacket);
-        result.setTcpFlags(flags);
-
         return result;
     }
 
