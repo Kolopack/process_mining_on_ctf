@@ -17,27 +17,36 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class PcapReader {
     Logger logger = Logger.getLogger(PcapReader.class.getName());
-    //private static final String pcapEnding=".*\\.pcap.*";
-    private static final String pcapEnding = "ictf2010.pcap31";
+    private static final String pcapEnding=".*\\.pcap.*";
+    //private static final String pcapEnding = "ictf2010.pcap31";
 
     private File directoryPath;
     private Path temporaryStoringPath;
     private List<File> fileList;
+    private List<Storing> storingList;
+    private Storing storing;
 
+    //Team and service setup related variables
     private InetAddress ipService;
     private InetAddress ipTeam;
     private String ipTeamMask;
+    private String teamName;
+    private String serviceName;
 
+    //Only for statistical printing purposes
     private int packetCounter;
     private int importantPacket;
+
+    public PcapReader(String teamName, String serviceName) {
+        this.teamName=teamName;
+        this.serviceName=serviceName;
+        storingList=new ArrayList<>();
+    }
 
     public void importPcap(String pathToDirectory, String temporarySavingDirectory) {
         directoryPath = new File(pathToDirectory);
@@ -85,13 +94,20 @@ public class PcapReader {
         this.ipService = ipService;
 
         for (File file : fileList) {
-            filterPCAP(file.getPath(), ipTeam, ipService);
+            storing=new Storing(teamName,serviceName, file.getName());
+            List<PcapPacket> result=filterPCAP(file.getPath(), ipTeam, ipService);
+            if(!result.isEmpty()) {
+                storingList.add(storing);
+                printSerializedPackets();
+            }
             logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + importantPacket + " total/TCP");
         }
     }
 
-    private void filterPCAP(String filePath, InetAddress ipTeam, InetAddress ipService) {
+    private List<PcapPacket> filterPCAP(String filePath, InetAddress ipTeam, InetAddress ipService) {
+        List<PcapPacket> packets=new ArrayList<>();
         try {
+
             Pcap pcap = Pcap.openStream(filePath);
             pcap.loop(new PacketHandler() {
                 @Override
@@ -113,18 +129,25 @@ public class PcapReader {
                                     System.out.println("But TCP-Packet is null.");
                                 }
                                 PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
-                                System.out.println(myPacket);
+                                packets.add(myPacket);
+
                             }
                         }
                     }
+
                     return true;
                 }
+
             });
         } catch (FileNotFoundException e) {
             logger.severe(e.getMessage());
         } catch (IOException e) {
             logger.severe(e.getMessage());
         }
+        if(!packets.isEmpty()){
+            storing.storePacketsList(packets);
+        }
+        return packets;
     }
 
     private boolean iPisSenderOrReceiver(InetAddress ipSource, InetAddress ipDestination) {
@@ -160,5 +183,13 @@ public class PcapReader {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public void printSerializedPackets() {
+        List<PcapPacket> packets=storing.readTempPacketsList();
+        for(PcapPacket p : packets) {
+            System.out.println(p);
+        }
+        System.out.println("Size: "+packets.size());
     }
 }
