@@ -98,10 +98,10 @@ public class PcapReader {
             List<PcapPacket> result=filterPCAP(file.getPath(), ipTeam, ipService);
             if(!result.isEmpty()) {
                 storingList.add(storing);
-                printSerializedPackets();
             }
             logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + importantPacket + " total/TCP");
         }
+        printSerializedPackets();
     }
 
     private List<PcapPacket> filterPCAP(String filePath, InetAddress ipTeam, InetAddress ipService) {
@@ -186,10 +186,10 @@ public class PcapReader {
     }
 
     public void printSerializedPackets() {
-        List<PcapPacket> packets=storing.readTempPacketsList();
-        for(PcapPacket p : packets) {
-            System.out.println(p);
+        for(Storing s : storingList) {
+            List<PcapPacket> packets=s.readTempPacketsList();
+            System.out.println(packets);
         }
-        System.out.println("Size: "+packets.size());
+        //System.out.println("Size: "+packets.size());
     }
 }
