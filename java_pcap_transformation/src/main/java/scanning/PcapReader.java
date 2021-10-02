@@ -1,6 +1,8 @@
 package scanning;
 
 import converters.PacketConverter;
+import creation.IService;
+import creation.ServiceContext;
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.packet.IPPacket;
@@ -101,7 +103,7 @@ public class PcapReader {
             }
             logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + importantPacket + " total/TCP");
         }
-        printSerializedPackets();
+        createXES();
     }
 
     private List<PcapPacket> filterPCAP(String filePath, InetAddress ipTeam, InetAddress ipService) {
@@ -190,6 +192,20 @@ public class PcapReader {
             List<PcapPacket> packets=s.readTempPacketsList();
             System.out.println(packets);
         }
-        //System.out.println("Size: "+packets.size());
+    }
+
+    private void createXES() {
+        IService service= ServiceContext.createServiceClass(serviceName, teamName);
+        service.createXESwithList(getFullServiceList());
+        logger.info("Created all corresponding XES-files.");
+    }
+
+    private List<PcapPacket> getFullServiceList() {
+        List<PcapPacket> result=new ArrayList<>();
+
+        for(Storing s : storingList) {
+            result.addAll(s.readTempPacketsList());
+        }
+        return result;
     }
 }
