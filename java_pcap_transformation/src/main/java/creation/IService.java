@@ -7,6 +7,5 @@ import java.util.List;
 public interface IService {
 
 
-    void createXESwithList(List<PcapPacket> packetList);
-    private void createXES() {}
+    void createXESwithList(List<PcapPacket> packetList, String xesPath);
 }

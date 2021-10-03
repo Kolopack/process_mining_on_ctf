@@ -69,6 +69,10 @@ public class PcapPacket implements Serializable {
         this.tcpFlags = tcpFlags;
     }
 
+    public Timestamp getArrivalTime() {
+        return ArrivalTime;
+    }
+
     @Override
     public String toString() {
         return "PcapPacket{" +

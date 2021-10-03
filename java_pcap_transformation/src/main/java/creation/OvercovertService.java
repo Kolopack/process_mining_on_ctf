@@ -5,12 +5,15 @@ import packets.PcapPacket;
 import java.util.List;
 
 public class OvercovertService extends AbstractXESService implements IService{
+    private static final String OVERCOVERT="Overcovert";
+
     public OvercovertService(String teamName) {
-        super("Overcovert", teamName);
+        super(OVERCOVERT, teamName);
     }
 
     @Override
-    public void createXESwithList(List<PcapPacket> packetList) {
+    public void createXESwithList(List<PcapPacket> packetList, String xesPath) {
         this.packetList=packetList;
     }
+
 }

@@ -17,21 +17,19 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class PcapReader {
-    Logger logger = Logger.getLogger(PcapReader.class.getName());
+    private Logger logger = Logger.getLogger(PcapReader.class.getName());
     private static final String pcapEnding=".*\\.pcap.*";
     //private static final String pcapEnding = "ictf2010.pcap31";
 
     private File directoryPath;
-    private Path temporaryStoringPath;
     private List<File> fileList;
     private List<Storing> storingList;
     private Storing storing;
+    private String pathToXES;
 
     //Team and service setup related variables
     private InetAddress ipService;
@@ -44,15 +42,15 @@ public class PcapReader {
     private int packetCounter;
     private int importantPacket;
 
-    public PcapReader(String teamName, String serviceName) {
+    public PcapReader(String teamName, String serviceName, String pathToXES) {
         this.teamName=teamName;
         this.serviceName=serviceName;
+        this.pathToXES=pathToXES;
         storingList=new ArrayList<>();
     }
 
-    public void importPcap(String pathToDirectory, String temporarySavingDirectory) {
+    public void importPcap(String pathToDirectory) {
         directoryPath = new File(pathToDirectory);
-        temporaryStoringPath = Paths.get(temporarySavingDirectory);
         importFilepath();
     }
 
@@ -196,7 +194,7 @@ public class PcapReader {
 
     private void createXES() {
         IService service= ServiceContext.createServiceClass(serviceName, teamName);
-        service.createXESwithList(getFullServiceList());
+        service.createXESwithList(getFullServiceList(), pathToXES);
         logger.info("Created all corresponding XES-files.");
     }
 

@@ -112,11 +112,10 @@ public class XESManager {
             DOMSource source=new DOMSource(document);
             StreamResult result=new StreamResult(outputStream);
             transformer.transform(source,result);
-        } catch (FileNotFoundException e) {
+            logger.info("XES-file created at"+filePath.toString());
+        } catch (FileNotFoundException | TransformerConfigurationException e) {
             logger.severe(e.getMessage());
 
-        } catch (TransformerConfigurationException e) {
-            logger.severe(e.getMessage());
         } catch (IOException | TransformerException e) {
             logger.severe(e.getMessage());
         }
