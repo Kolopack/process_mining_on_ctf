@@ -5,6 +5,8 @@ import io.pkts.packet.TCPPacket;
 import packets.PcapPacket;
 import packets.TcpPacket;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.Buffer;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -15,8 +17,14 @@ public class PacketConverter {
     public static PcapPacket convertPacket(IPPacket ipPacket, TCPPacket tcpPacket) {
         int identification=ipPacket.getIdentification();
 
-        String ipSender=ipPacket.getSourceIP();
-        String ipReceiver=ipPacket.getDestinationIP();
+        InetAddress ipSender = null;
+        InetAddress ipReceiver=null;
+        try {
+            ipSender = InetAddress.getByName(ipPacket.getSourceIP());
+            ipReceiver = InetAddress.getByName(ipPacket.getDestinationIP());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
         PcapPacket result=new PcapPacket(identification,ipSender,ipReceiver);
 

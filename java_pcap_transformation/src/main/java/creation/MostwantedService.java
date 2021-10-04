@@ -2,6 +2,7 @@ package creation;
 
 import exceptions.PacketListIsEmptyException;
 import packets.PcapPacket;
+import xeshandling.DefaultEventCreator;
 import xeshandling.XESManager;
 
 import java.util.List;
@@ -26,5 +27,19 @@ public class MostwantedService extends AbstractXESService implements IService{
             logger.info("Packets are in correct order");
         }
 
+        //Three-way-handshakes
+        List<List> handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
+
+        System.out.println("There were the following handshakes detected:");
+        for(List<PcapPacket> handshake : handshakes) {
+            System.out.println("*");
+            for(PcapPacket packet : handshake) {
+                System.out.println("SEQ: "+packet.getSeqNumber()+" ACK: "+packet.getAckNumber());
+            }
+            System.out.println("*");
+        }
+
+        //Finishing of connection
+        List<List> finishes
     }
 }

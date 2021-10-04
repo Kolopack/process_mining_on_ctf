@@ -1,6 +1,7 @@
 package packets;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,8 +9,8 @@ import java.util.HashMap;
 public class PcapPacket implements Serializable {
     //IP-related parameters
     private int identification;
-    private String ipSender;
-    private String ipReceiver;
+    private InetAddress ipSender;
+    private InetAddress ipReceiver;
     private Timestamp ArrivalTime; //Check if ip time same as tcp time
     private short fragmentOffset;
     private int ipHeaderLength;
@@ -23,7 +24,7 @@ public class PcapPacket implements Serializable {
     private long ackNumber;
     private HashMap<String, Boolean> tcpFlags;
 
-    public PcapPacket(int identification, String ipSender, String ipReceiver) {
+    public PcapPacket(int identification, InetAddress ipSender, InetAddress ipReceiver) {
         this.identification = identification;
         this.ipSender = ipSender;
         this.ipReceiver = ipReceiver;
@@ -73,12 +74,32 @@ public class PcapPacket implements Serializable {
         return ArrivalTime;
     }
 
+    public HashMap<String, Boolean> getTcpFlags() {
+        return tcpFlags;
+    }
+
+    public long getSeqNumber() {
+        return seqNumber;
+    }
+
+    public long getAckNumber() {
+        return ackNumber;
+    }
+
+    public InetAddress getIpSender() {
+        return ipSender;
+    }
+
+    public InetAddress getIpReceiver() {
+        return ipReceiver;
+    }
+
     @Override
     public String toString() {
         return "PcapPacket{" +
                 "identification=" + identification +
-                ", ipSender='" + ipSender + '\'' +
-                ", ipReceiver='" + ipReceiver + '\'' +
+                ", ipSender='" + ipSender.getHostName() + '\'' +
+                ", ipReceiver='" + ipReceiver.getHostName() + '\'' +
                 ", ArrivalTime=" + ArrivalTime +
                 ", fragmentOffset=" + fragmentOffset +
                 ", ipHeaderLength=" + ipHeaderLength +

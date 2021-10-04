@@ -18,5 +18,10 @@
             <artifactId>pkts-core</artifactId>
             <version>3.0.7</version>
         </dependency>
+       <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>18-ea+3</version>
+        </dependency>
     </dependencies>
 </project>

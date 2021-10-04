@@ -22,8 +22,8 @@ import java.util.logging.Logger;
 
 public class PcapReader {
     private Logger logger = Logger.getLogger(PcapReader.class.getName());
-    private static final String pcapEnding=".*\\.pcap.*";
-    //private static final String pcapEnding = "ictf2010.pcap31";
+    //private static final String pcapEnding=".*\\.pcap.*";
+    private static final String pcapEnding = "ictf2010.pcap31";
 
     private File directoryPath;
     private List<File> fileList;
