@@ -30,7 +30,7 @@ public class MostwantedService extends AbstractXESService implements IService{
         //Three-way-handshakes
         List<List> handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
 
-        System.out.println("There were the following handshakes detected:");
+        System.out.println("There were the following handshakes detected: ("+handshakes.size()+")");
         for(List<PcapPacket> handshake : handshakes) {
             System.out.println("*");
             for(PcapPacket packet : handshake) {
@@ -40,6 +40,15 @@ public class MostwantedService extends AbstractXESService implements IService{
         }
 
         //Finishing of connection
-        List<List> finishes
+        List<List> finishes=DefaultEventCreator.checkForFinishing(packetList);
+
+        System.out.println("There were the following finishes detected: ("+finishes.size()+")");
+        for(List<PcapPacket> finish : finishes) {
+            System.out.println("*");
+            for(PcapPacket packet : finish) {
+                System.out.println("SEQ: "+packet.getSeqNumber()+" ACK: "+packet.getAckNumber());
+            }
+            System.out.println("*");
+        }
     }
 }

@@ -92,6 +92,7 @@ public class DefaultEventCreator {
         List<List> result=new ArrayList<>();
 
         Long seqA;
+        Long ackA;
         InetAddress partnerA;
         InetAddress partnerB;
 
@@ -99,31 +100,92 @@ public class DefaultEventCreator {
             PcapPacket current=list.get(i);
 
             if(current.getTcpFlags().get("FIN")) {
+                List<PcapPacket> finish=new ArrayList<>();
+
                 partnerA=current.getIpSender();
                 partnerB=current.getIpReceiver();
                 seqA=current.getSeqNumber();
+                ackA=current.getAckNumber();
+
 
                 List<PcapPacket> rest=getRestOfList(list,i);
 
+                List<Pair<Long, PcapPacket>> secondPacket= checkForSecondPacketFinishing(rest,seqA, ackA,partnerB);
+                if(!secondPacket.isEmpty()) {
+                    finish.add(current);
+                    for(Pair<Long, PcapPacket> pair : secondPacket) {
+                        finish.add(pair.getValue());
+                    }
 
+                    Pair<Boolean, PcapPacket> thirdPacket= checkForThirdPacketFinishing(rest,secondPacket.get(0).getKey(),partnerA);
+                    if(thirdPacket.getKey()) {
+                        finish.add(thirdPacket.getValue());
+                    }
+                }
+                if(!finish.isEmpty()){
+                    result.add(finish);
+                }
             }
         }
 
         return result;
     }
 
-    private static Pair checkForSecondPacketFinishing(List<PcapPacket> list, Long seq, InetAddress partnerB) {
+    private static List<Pair<Long, PcapPacket>> checkForSecondPacketFinishing(List<PcapPacket> list, Long seq, Long ack, InetAddress partnerB) {
         Long result=null;
+        List<Pair<Long, PcapPacket>> resultList=new ArrayList<>();
 
         for(PcapPacket packet : list) {
-            if(packet.getTcpFlags().get("ACK") && packet.getAckNumber()==(seq+1)
-                && packet.getTcpFlags().get("FIN")) {
+            if(packet.getIpSender().equals(partnerB) && packet.getTcpFlags().get("ACK")
+                    && packet.getAckNumber()==(seq+1) && packet.getSeqNumber()==ack) {
                 result=packet.getSeqNumber();
+                resultList.add(new Pair(result,packet));
+                return resultList;
+                /*if(packet.getTcpFlags().get("FIN")) {
+                    return resultList;
+                }
+                else {
+                    Pair separatePacket=checkForSeparateFINpacket(list,seq, ack, partnerB);
+                    resultList.add(separatePacket);
+                    return resultList;
+                }*/
+
+            }
+
+        }
+        return resultList;
+    }
+
+    /*private static Pair checkForSeparateFINpacket(List<PcapPacket> list, Long seq, Long ack, InetAddress partnerB) {
+        Long result=null;
+
+        //Second case: ACK and FIN are not sent in the same packet
+        for(PcapPacket packet: list) {
+            if( packet.getIpSender().equals(partnerB) && packet.getTcpFlags().get("ACK")
+                    && packet.getAckNumber()==(seq+1) && !packet.getTcpFlags().get("FIN")
+                    && packet.getSeqNumber()==ack) {
+                    result=packet.getSeqNumber();
+                    return new Pair(result,packet);
+            }
+        }
+        return new Pair(result,null);
+    }*/
+
+    private static Pair checkForThirdPacketFinishing(List<PcapPacket> list, Long seqB, InetAddress partnerA) {
+        boolean result=false;
+
+        for(PcapPacket packet : list) {
+            if(packet.getIpSender().equals(partnerA) && packet.getTcpFlags().get("ACK")
+                && packet.getAckNumber()==(seqB+1)) {
+                result=true;
                 return new Pair(result,packet);
             }
         }
+        return new Pair(result,null);
+    }
 
-        return new Pair(result, null);
+    public static List<PcapPacket> getPSHACKExchangingBetween(List<PcapPacket> list, InetAddress partnerA, InetAddress partnerB) {
+
     }
 }
 
