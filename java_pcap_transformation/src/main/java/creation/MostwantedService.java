@@ -36,7 +36,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         List<List<PcapPacket>> handshakes = new ArrayList<>();
         List<List<PcapPacket>> finishes=new ArrayList<>();
 
-        Long seqA;
+        /*Long seqA;
         InetAddress client;
         InetAddress server;
 
@@ -44,11 +44,11 @@ public class MostwantedService extends AbstractXESService implements IService {
 
             //Current packet
             PcapPacket current=packetList.get(i);
+            List<PcapPacket> rest=ListManager.getRestOfList(packetList,i);
             if(current.getTcpFlags().get("SYN")) {
                 client=current.getIpSender();
                 server=current.getIpReceiver();
                 seqA=current.getSeqNumber();
-                List<PcapPacket> rest=ListManager.getRestOfList(packetList,i);
 
                 Pair<Long, PcapPacket> secondPacket= DefaultEventCreator.checkForSecondPacketThreeWayHandshake(rest,server,seqA);
                 Long seqB=secondPacket.getKey();
@@ -66,11 +66,11 @@ public class MostwantedService extends AbstractXESService implements IService {
                         handshakes.add(handshake);
                     }
                 }
-                List<PcapPacket> finish=DefaultEventCreator.checkForFinishingPackets(rest);
-                finishes.add(finish);
-            }
-        }
 
+            }
+        }*/
+        handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
+        finishes=DefaultEventCreator.checkForFinishing(packetList);
 
         System.out.println("The following handshakes were detected: ("+handshakes.size()+")");
         for(List<PcapPacket> handshake : handshakes) {
@@ -89,15 +89,5 @@ public class MostwantedService extends AbstractXESService implements IService {
             }
             System.out.println("*");
         }
-
-        /*System.out.println("The following Mostwanteds were detected: ("+full.size()+")");
-        for(Map.Entry<MostwantedPart, List<PcapPacket>> mostwanted : full.entrySet()) {
-            System.out.println("*");
-            System.out.println(mostwanted.getKey());
-            for(PcapPacket packet : mostwanted.getValue()) {
-                System.out.println(packet);
-            }
-            System.out.println("*");
-        }*/
     }
 }

@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 public class DefaultEventCreator {
     private static Logger logger=Logger.getLogger(DefaultEventCreator.class.getName());
 
-    public static List<List> checkForThreeWayHandshake(List<PcapPacket> list) {
-        List<List> result=new ArrayList<>();
+    public static List<List<PcapPacket>> checkForThreeWayHandshake(List<PcapPacket> list) {
+        List<List<PcapPacket>> result=new ArrayList<>();
 
         Long seqA;
         InetAddress client;
@@ -119,8 +119,8 @@ public class DefaultEventCreator {
         return new Pair<>(result, null);
     }
 
-    public static List<List> checkForFinishing(List<PcapPacket> list) {
-        List<List> result=new ArrayList<>();
+    public static List<List<PcapPacket>> checkForFinishing(List<PcapPacket> list) {
+        List<List<PcapPacket>> result=new ArrayList<>();
 
         Long seqA;
         Long ackA;
