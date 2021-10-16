@@ -1,7 +1,9 @@
 package xeshandling;
 
 import javafx.util.Pair;
+import packets.Mostwanted;
 import packets.PcapPacket;
+import packets.Session;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -13,8 +15,8 @@ import java.util.logging.Logger;
 public class DefaultEventCreator {
     private static Logger logger=Logger.getLogger(DefaultEventCreator.class.getName());
 
-    public static List<List<PcapPacket>> checkForThreeWayHandshake(List<PcapPacket> list) {
-        List<List<PcapPacket>> result=new ArrayList<>();
+    public static List<Session> checkForThreeWayHandshake(List<PcapPacket> list) {
+        List<Session> result=new ArrayList<>();
 
         Long seqA;
         InetAddress client;
@@ -36,53 +38,18 @@ public class DefaultEventCreator {
                 if(seqB!=null) {
 
 
-                    Pair<Boolean, PcapPacket> thirdPacket= checkForThirdPacketThreeWayHandshake(rest,seqB,(seqA+1),client);
-                    if(thirdPacket.getKey()) {
+                    Pair<Integer, PcapPacket> thirdPacket= checkForThirdPacketThreeWayHandshake(rest,seqB,(seqA+1),client);
+                    if(thirdPacket.getKey()!=null) {
                         List<PcapPacket> handshake=new ArrayList();
                         handshake.add(current);
                         handshake.add(secondPacket.getValue());
                         handshake.add(thirdPacket.getValue());
 
-                        result.add(handshake);
-                    }
-                }
-            }
-        }
-        return result;
-    }
+                        Session session=new Session();
+                        session.setCertainIndex(i);
+                        session.setPackets(handshake);
 
-    public static List<PcapPacket> checkForThreeWayHandshakePackets(List<PcapPacket> list) {
-        List<PcapPacket> result=new ArrayList<>();
-
-        Long seqA;
-        InetAddress client;
-        InetAddress server;
-
-        for(int i=0; i<list.size();++i) {
-
-            //Current packet
-            PcapPacket current=list.get(i);
-            if(current.getTcpFlags().get("SYN")) {
-                client=current.getIpSender();
-                server=current.getIpReceiver();
-                seqA=current.getSeqNumber();
-                List<PcapPacket> rest=ListManager.getRestOfList(list,i);
-
-                Pair<Long, PcapPacket> secondPacket= checkForSecondPacketThreeWayHandshake(rest,server,seqA);
-                Long seqB=secondPacket.getKey();
-
-                if(seqB!=null) {
-
-
-                    Pair<Boolean, PcapPacket> thirdPacket= checkForThirdPacketThreeWayHandshake(rest,seqB,(seqA+1),client);
-                    if(thirdPacket.getKey()) {
-                        List<PcapPacket> handshake=new ArrayList();
-                        handshake.add(current);
-                        handshake.add(secondPacket.getValue());
-                        handshake.add(thirdPacket.getValue());
-
-                        result=handshake;
-                        return result;
+                        result.add(session);
                     }
                 }
             }
@@ -105,18 +72,19 @@ public class DefaultEventCreator {
     }
 
     public static Pair checkForThirdPacketThreeWayHandshake(List<PcapPacket> list, Long seqSecond, Long ackFirst, InetAddress client) {
-        boolean result=false;
+        Integer index=null;
 
-        for(PcapPacket packet : list) {
+        for(int i=0; i<list.size(); ++i) {
+            PcapPacket packet= list.get(i);
             if(packet.getIpSender().equals(client) && packet.getAckNumber()==(seqSecond+1)
                 && packet.getSeqNumber()==ackFirst) {
                 if(packet.getTcpFlags().get("ACK")) {
-                    result=true;
-                    return new Pair<>(result, packet);
+                    index=i;
+                    return new Pair<>(index, packet);
                 }
             }
         }
-        return new Pair<>(result, null);
+        return new Pair<>(index, null);
     }
 
     public static List<List<PcapPacket>> checkForFinishing(List<PcapPacket> list) {
@@ -155,50 +123,6 @@ public class DefaultEventCreator {
                 }
                 if(!finish.isEmpty()){
                     result.add(finish);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public static List<PcapPacket> checkForFinishingPackets(List<PcapPacket> list) {
-        List<PcapPacket> result=new ArrayList<>();
-
-        Long seqA;
-        Long ackA;
-        InetAddress partnerA;
-        InetAddress partnerB;
-
-        for(int i=0; i<list.size();++i) {
-            PcapPacket current=list.get(i);
-
-            if(current.getTcpFlags().get("FIN")) {
-                List<PcapPacket> finish=new ArrayList<>();
-
-                partnerA=current.getIpSender();
-                partnerB=current.getIpReceiver();
-                seqA=current.getSeqNumber();
-                ackA=current.getAckNumber();
-
-
-                List<PcapPacket> rest=ListManager.getRestOfList(list,i);
-
-                List<Pair<Long, PcapPacket>> secondPacket= checkForSecondPacketFinishing(rest,seqA, ackA,partnerB);
-                if(!secondPacket.isEmpty()) {
-                    finish.add(current);
-                    for(Pair<Long, PcapPacket> pair : secondPacket) {
-                        finish.add(pair.getValue());
-                    }
-
-                    Pair<Boolean, PcapPacket> thirdPacket= checkForThirdPacketFinishing(rest,secondPacket.get(0).getKey(),partnerA);
-                    if(thirdPacket.getKey()) {
-                        finish.add(thirdPacket.getValue());
-                    }
-                }
-                if(!finish.isEmpty()){
-                    result=finish;
-                    return result;
                 }
             }
         }
@@ -259,17 +183,27 @@ public class DefaultEventCreator {
         return new Pair(result,null);
     }
 
-    public static List<PcapPacket> getPSHACKSessionsBetween(List<PcapPacket> list, InetAddress partnerA, InetAddress partnerB) {
-        List<PcapPacket> result=new ArrayList<>();
+    public static List<Mostwanted> getPSHACKSessionsBetween(List<Session> handshakes, List<List<PcapPacket>> finishes, List<PcapPacket> allPackets,
+                                                            InetAddress team, InetAddress service) {
+        List<Mostwanted> result=new ArrayList<>();
 
-        for(PcapPacket packet : list) {
-            if((packet.getIpSender().equals(partnerA) && packet.getIpReceiver().equals(partnerB)
-             || packet.getIpSender().equals(partnerB) && packet.getIpReceiver().equals(partnerA))) {
-                if(isOnlyPSHOrACKFlagSet(packet.getTcpFlags())){
-                    result.add(packet);
-                }
+        for(int i=0; i<handshakes.size() && i<finishes.size(); ++i) {
+            List<PcapPacket> packets=handshakes.get(i).getPackets();
+            PcapPacket lastPacketHandshake=packets.get(packets.size()-1);
+
+            Integer indexFirstPacketHandshake=handshake.getCertainIndex();
+            PcapPacket firstPacketFinishes=finishes.get(i).get(0);
+
+
+            for(i=indexFirstPacketHandshake; i< allPackets.size(); ++i) {
+
             }
+
+
+
+
         }
+
         return result;
     }
 

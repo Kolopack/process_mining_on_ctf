@@ -4,6 +4,7 @@ import enumerations.MostwantedPart;
 import exceptions.PacketListIsEmptyException;
 import javafx.util.Pair;
 import packets.PcapPacket;
+import packets.Session;
 import xeshandling.DefaultEventCreator;
 import xeshandling.ListManager;
 import xeshandling.XESManager;
@@ -33,7 +34,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         if (isOrderOfPacketsTrue()) {
             logger.info("Packets are in correct order");
         }
-        List<List<PcapPacket>> handshakes = new ArrayList<>();
+        List<Session> handshakes = new ArrayList<>();
         List<List<PcapPacket>> finishes=new ArrayList<>();
 
         /*Long seqA;
@@ -72,12 +73,12 @@ public class MostwantedService extends AbstractXESService implements IService {
         handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
         finishes=DefaultEventCreator.checkForFinishing(packetList);
 
+
+
         System.out.println("The following handshakes were detected: ("+handshakes.size()+")");
-        for(List<PcapPacket> handshake : handshakes) {
+        for(Session handshake : handshakes) {
             System.out.println("*");
-            for(PcapPacket packet : handshake) {
-                System.out.println(packet);
-            }
+            System.out.println(handshake);
             System.out.println("*");
         }
 
