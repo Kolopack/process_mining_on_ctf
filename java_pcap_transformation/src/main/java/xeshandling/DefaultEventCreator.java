@@ -1,11 +1,14 @@
 package xeshandling;
 
+import enumerations.MostwantedPart;
+import exceptions.TimestampsNotFittingException;
 import javafx.util.Pair;
 import packets.Mostwanted;
 import packets.PcapPacket;
 import packets.Session;
 
 import java.net.InetAddress;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -188,19 +191,43 @@ public class DefaultEventCreator {
         List<Mostwanted> result=new ArrayList<>();
 
         for(int i=0; i<handshakes.size() && i<finishes.size(); ++i) {
-            List<PcapPacket> packets=handshakes.get(i).getPackets();
-            PcapPacket lastPacketHandshake=packets.get(packets.size()-1);
+            Mostwanted mostwanted=new Mostwanted(team, service);
+            HashMap<MostwantedPart, List<PcapPacket>> mostwantedPackets=new HashMap<>();
 
-            Integer indexFirstPacketHandshake=handshake.getCertainIndex();
+            List<PcapPacket> handshakePackets=handshakes.get(i).getPackets();
+            Integer indexFirstPacketHandshake=handshakes.get(i).getCertainIndex();
+            PcapPacket lastPacketHandshake=handshakePackets.get(handshakePackets.size()-1);
+            Timestamp timestampHandshake=lastPacketHandshake.getArrivalTime();
+
+            List<PcapPacket> finishesPackets=finishes.get(i);
             PcapPacket firstPacketFinishes=finishes.get(i).get(0);
+            Timestamp timestampFinish=firstPacketFinishes.getArrivalTime();
 
+            if(timestampHandshake.after(timestampFinish)) {
+               throw new TimestampsNotFittingException();
+            }
+            else {
+                List<PcapPacket> pshAttacks=new ArrayList<>();
 
-            for(i=indexFirstPacketHandshake; i< allPackets.size(); ++i) {
+                for(i=indexFirstPacketHandshake; i< allPackets.size(); ++i) {
+                    PcapPacket current=allPackets.get(i);
+                    if(!current.getArrivalTime().before(timestampFinish)) {
+                        break;
+                    }
+                    if(isOnlyPSHOrACKFlagSet(current.getTcpFlags())){
+                        pshAttacks.add(current);
+                    }
+                }
+
+                //if(!pshAttacks.isEmpty()) {
+                    mostwantedPackets.put(MostwantedPart.HANDSHAKE,handshakePackets);
+                    mostwantedPackets.put(MostwantedPart.PSHACK, pshAttacks);
+                    mostwantedPackets.put(MostwantedPart.FINISHING, finishesPackets);
+
+                    mostwanted.setPackets(mostwantedPackets);
+               // }
 
             }
-
-
-
 
         }
 

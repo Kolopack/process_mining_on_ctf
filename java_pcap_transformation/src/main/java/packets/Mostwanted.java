@@ -13,6 +13,11 @@ public class Mostwanted {
     private boolean success;
     private String flag;
 
+    public Mostwanted(InetAddress team, InetAddress service) {
+        this.team=team;
+        this.service=service;
+    }
+
     public Mostwanted(InetAddress team, InetAddress service, HashMap<MostwantedPart, List<PcapPacket>> packets) {
         this.team=team;
         this.service=service;
@@ -38,5 +43,9 @@ public class Mostwanted {
 
     public boolean wasSuccessful() {
         return success;
+    }
+
+    public void setPackets(HashMap<MostwantedPart, List<PcapPacket>> packets) {
+        this.packets = packets;
     }
 }

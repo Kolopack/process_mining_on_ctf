@@ -193,7 +193,7 @@ public class PcapReader {
     }
 
     private void createXES() {
-        IService service= ServiceContext.createServiceClass(serviceName, teamName);
+        IService service= ServiceContext.createServiceClass(serviceName, teamName, ipTeam);
         service.createXESwithList(getFullServiceList(), pathToXES);
         logger.info("Created all corresponding XES-files.");
     }

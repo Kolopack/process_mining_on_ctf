@@ -1,25 +1,31 @@
 package creation;
 
-import enumerations.MostwantedPart;
 import exceptions.PacketListIsEmptyException;
-import javafx.util.Pair;
+import packets.Mostwanted;
 import packets.PcapPacket;
 import packets.Session;
 import xeshandling.DefaultEventCreator;
-import xeshandling.ListManager;
-import xeshandling.XESManager;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MostwantedService extends AbstractXESService implements IService {
     private static final String MOSTWANTED = "Mostwanted";
+    private static final String MOSTWANTED_IP_STRING="10.14.1.9";
+    private static InetAddress MOSTWANTED_IP;
 
-    public MostwantedService(String teamName) {
-        super(MOSTWANTED, teamName);
+    static {
+        try {
+            MOSTWANTED_IP = InetAddress.getByName(MOSTWANTED_IP_STRING);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public MostwantedService(String teamName, InetAddress teamIP) {
+        super(MOSTWANTED, teamName, teamIP, MOSTWANTED_IP);
     }
 
     @Override
@@ -73,22 +79,33 @@ public class MostwantedService extends AbstractXESService implements IService {
         handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
         finishes=DefaultEventCreator.checkForFinishing(packetList);
 
+        List<Mostwanted> mostwanteds=DefaultEventCreator.getPSHACKSessionsBetween(handshakes,finishes,packetList,getTeamIP(),MOSTWANTED_IP);
 
-
-        System.out.println("The following handshakes were detected: ("+handshakes.size()+")");
+        /*System.out.println("The following handshakes were detected: ("+handshakes.size()+")");
         for(Session handshake : handshakes) {
             System.out.println("*");
             System.out.println(handshake);
             System.out.println("*");
-        }
+        }*/
 
-        System.out.println("The following finishes were detected: ("+finishes.size()+")");
+        /*System.out.println("The following finishes were detected: ("+finishes.size()+")");
         for(List<PcapPacket> finish : finishes) {
             System.out.println("*");
             for(PcapPacket packet : finish) {
                 System.out.println(packet);
             }
             System.out.println("*");
+        }*/
+
+        System.out.println("Handshakes-count: "+handshakes.size());
+        System.out.println("Finishes-count: "+finishes.size());
+
+        System.out.println("The following Mostwanteds were detected: ("+mostwanteds.size()+")");
+        for(Mostwanted mostwanted : mostwanteds) {
+            System.out.println("*");
+            System.out.println(mostwanted);
+            System.out.println("*");
         }
+
     }
 }

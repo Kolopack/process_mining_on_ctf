@@ -1,9 +1,9 @@
 package exceptions;
 
-public class ServiceNotFoundException extends RuntimeException{
+public class TimestampsNotFittingException extends RuntimeException{
     private static final String errorMessage="The service you entered is not supported by this tool. Please check the spelling.";
 
-    public ServiceNotFoundException() {
+    public TimestampsNotFittingException() {
         super(errorMessage);
     }
 }

@@ -1,25 +1,24 @@
 package creation;
 
-import exceptions.ServiceNotFoundException;
-import packets.PcapPacket;
+import exceptions.TimestampsNotFittingException;
 
-import java.util.List;
+import java.net.InetAddress;
 
 public class ServiceContext {
     private static final String MOSTWANTED="Mostwanted";
     private static final String OVERCOVERT="Overcovert";
 
-    public static IService createServiceClass(String serviceName, String teamName) {
+    public static IService createServiceClass(String serviceName, String teamName, InetAddress teamIP) {
         IService result;
 
         if(serviceName.equals(MOSTWANTED)) {
-            result=new MostwantedService(teamName);
+            result=new MostwantedService(teamName, teamIP);
             return result;
         }
         if(serviceName.equals(OVERCOVERT)) {
-            result=new OvercovertService(teamName);
+            result=new OvercovertService(teamName, teamIP);
             return result;
         }
-        throw new ServiceNotFoundException();
+        throw new TimestampsNotFittingException();
     }
 }
