@@ -211,21 +211,23 @@ public class DefaultEventCreator {
 
                 for(i=indexFirstPacketHandshake; i< allPackets.size(); ++i) {
                     PcapPacket current=allPackets.get(i);
-                    if(!current.getArrivalTime().before(timestampFinish)) {
+                    if(!(current.getArrivalTime().before(timestampFinish))) {
+                        System.out.println("i: "+i);
                         break;
                     }
-                    if(isOnlyPSHOrACKFlagSet(current.getTcpFlags())){
+                    //if(isOnlyPSHOrACKFlagSet(current.getTcpFlags())){
                         pshAttacks.add(current);
-                    }
+                    //}
                 }
 
-                //if(!pshAttacks.isEmpty()) {
+                if(!pshAttacks.isEmpty()) {
                     mostwantedPackets.put(MostwantedPart.HANDSHAKE,handshakePackets);
                     mostwantedPackets.put(MostwantedPart.PSHACK, pshAttacks);
                     mostwantedPackets.put(MostwantedPart.FINISHING, finishesPackets);
 
                     mostwanted.setPackets(mostwantedPackets);
-               // }
+                    result.add(mostwanted);
+               }
 
             }
 

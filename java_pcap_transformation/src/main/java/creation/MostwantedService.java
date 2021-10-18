@@ -43,39 +43,6 @@ public class MostwantedService extends AbstractXESService implements IService {
         List<Session> handshakes = new ArrayList<>();
         List<List<PcapPacket>> finishes=new ArrayList<>();
 
-        /*Long seqA;
-        InetAddress client;
-        InetAddress server;
-
-        for(int i=0; i<packetList.size();++i) {
-
-            //Current packet
-            PcapPacket current=packetList.get(i);
-            List<PcapPacket> rest=ListManager.getRestOfList(packetList,i);
-            if(current.getTcpFlags().get("SYN")) {
-                client=current.getIpSender();
-                server=current.getIpReceiver();
-                seqA=current.getSeqNumber();
-
-                Pair<Long, PcapPacket> secondPacket= DefaultEventCreator.checkForSecondPacketThreeWayHandshake(rest,server,seqA);
-                Long seqB=secondPacket.getKey();
-
-                if(seqB!=null) {
-
-
-                    Pair<Boolean, PcapPacket> thirdPacket= DefaultEventCreator.checkForThirdPacketThreeWayHandshake(rest,seqB,(seqA+1),client);
-                    if(thirdPacket.getKey()) {
-                        List<PcapPacket> handshake=new ArrayList();
-                        handshake.add(current);
-                        handshake.add(secondPacket.getValue());
-                        handshake.add(thirdPacket.getValue());
-
-                        handshakes.add(handshake);
-                    }
-                }
-
-            }
-        }*/
         handshakes=DefaultEventCreator.checkForThreeWayHandshake(packetList);
         finishes=DefaultEventCreator.checkForFinishing(packetList);
 
@@ -86,9 +53,9 @@ public class MostwantedService extends AbstractXESService implements IService {
             System.out.println("*");
             System.out.println(handshake);
             System.out.println("*");
-        }*/
+        }
 
-        /*System.out.println("The following finishes were detected: ("+finishes.size()+")");
+        System.out.println("The following finishes were detected: ("+finishes.size()+")");
         for(List<PcapPacket> finish : finishes) {
             System.out.println("*");
             for(PcapPacket packet : finish) {

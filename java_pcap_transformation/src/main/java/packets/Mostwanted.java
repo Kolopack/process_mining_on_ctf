@@ -5,6 +5,7 @@ import enumerations.MostwantedPart;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Mostwanted {
     private InetAddress team;
@@ -47,5 +48,23 @@ public class Mostwanted {
 
     public void setPackets(HashMap<MostwantedPart, List<PcapPacket>> packets) {
         this.packets = packets;
+    }
+
+    @Override
+    public String toString() {
+        String result="";
+        result+= "Mostwanted{" +
+                "team=" + team +
+                ", service=" + service +
+                ", success=" + success +
+                ", flag='" + flag + '\'';
+                for(Map.Entry<MostwantedPart, List<PcapPacket>> entry : packets.entrySet()) {
+                    result +="\nPart: "+entry.getKey()+"\n";
+                    for(PcapPacket packet : entry.getValue()) {
+                        result+= packet.toString()+"\n";
+                    }
+                }
+                result+="};";
+                return result;
     }
 }
