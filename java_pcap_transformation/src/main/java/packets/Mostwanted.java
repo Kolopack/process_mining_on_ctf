@@ -58,12 +58,27 @@ public class Mostwanted {
                 ", service=" + service +
                 ", success=" + success +
                 ", flag='" + flag + '\'';
-                for(Map.Entry<MostwantedPart, List<PcapPacket>> entry : packets.entrySet()) {
-                    result +="\nPart: "+entry.getKey()+"\n";
-                    for(PcapPacket packet : entry.getValue()) {
-                        result+= packet.toString()+"\n";
-                    }
+
+                result+= "{"+MostwantedPart.HANDSHAKE.name()+":\n";
+                List<PcapPacket> handshake=packets.get(MostwantedPart.HANDSHAKE);
+                for(PcapPacket packet : handshake) {
+                    result+= packet.toString()+"\n";
                 }
+                result+="}\n";
+
+                result+= "{"+MostwantedPart.PSHACK.name()+":\n";
+                List<PcapPacket> pshack=packets.get(MostwantedPart.PSHACK);
+                for(PcapPacket packet : pshack) {
+                    result+= packet.toString()+"\n";
+                }
+                result+="}\n";
+
+                result+= "{"+MostwantedPart.FINISHING.name()+":\n";
+                List<PcapPacket> finish=packets.get(MostwantedPart.FINISHING);
+                for(PcapPacket packet : finish) {
+                    result+= packet.toString()+"\n";
+                }
+
                 result+="};";
                 return result;
     }

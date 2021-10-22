@@ -35,13 +35,13 @@ public class DefaultEventCreator {
                 seqA=current.getSeqNumber();
                 List<PcapPacket> rest=ListManager.getRestOfList(list,i);
 
-                Pair<Long, PcapPacket> secondPacket= checkForSecondPacketThreeWayHandshake(rest,server,seqA);
+                Pair<Long, PcapPacket> secondPacket= checkForSecondPacketThreeWayHandshake(list, i,server,seqA);
                 Long seqB=secondPacket.getKey();
 
                 if(seqB!=null) {
 
 
-                    Pair<Integer, PcapPacket> thirdPacket= checkForThirdPacketThreeWayHandshake(rest,seqB,(seqA+1),client);
+                    Pair<Integer, PcapPacket> thirdPacket= checkForThirdPacketThreeWayHandshake(list, i,seqB,(seqA+1),client);
                     if(thirdPacket.getKey()!=null) {
                         List<PcapPacket> handshake=new ArrayList();
                         handshake.add(current);
@@ -49,7 +49,7 @@ public class DefaultEventCreator {
                         handshake.add(thirdPacket.getValue());
 
                         Session session=new Session();
-                        session.setCertainIndex(i);
+                        session.setCertainIndex(thirdPacket.getKey());
                         session.setPackets(handshake);
 
                         result.add(session);
@@ -60,10 +60,11 @@ public class DefaultEventCreator {
         return result;
     }
 
-    public static Pair checkForSecondPacketThreeWayHandshake(List<PcapPacket> list, InetAddress server, Long seqFirst) {
+    public static Pair checkForSecondPacketThreeWayHandshake(List<PcapPacket> list, int index, InetAddress server, Long seqFirst) {
         Long result=null;
 
-        for(PcapPacket packet : list) {
+        for(int i=index; i<list.size(); ++i) {
+            PcapPacket packet=list.get(i);
             if(packet.getIpSender().equals(server) && packet.getAckNumber()==(seqFirst+1)){
                 if(packet.getTcpFlags().get("SYN") && packet.getTcpFlags().get("ACK")) {
                     result=packet.getSeqNumber();
@@ -74,20 +75,19 @@ public class DefaultEventCreator {
         return new Pair(result,null);
     }
 
-    public static Pair checkForThirdPacketThreeWayHandshake(List<PcapPacket> list, Long seqSecond, Long ackFirst, InetAddress client) {
-        Integer index=null;
+    public static Pair checkForThirdPacketThreeWayHandshake(List<PcapPacket> list, int index, Long seqSecond, Long ackFirst, InetAddress client) {
 
-        for(int i=0; i<list.size(); ++i) {
+
+        for(int i=index; i<list.size(); ++i) {
             PcapPacket packet= list.get(i);
             if(packet.getIpSender().equals(client) && packet.getAckNumber()==(seqSecond+1)
                 && packet.getSeqNumber()==ackFirst) {
                 if(packet.getTcpFlags().get("ACK")) {
-                    index=i;
-                    return new Pair<>(index, packet);
+                    return new Pair<>(i, packet);
                 }
             }
         }
-        return new Pair<>(index, null);
+        return new Pair<>(null, null);
     }
 
     public static List<List<PcapPacket>> checkForFinishing(List<PcapPacket> list) {
@@ -215,9 +215,9 @@ public class DefaultEventCreator {
                         System.out.println("i: "+i);
                         break;
                     }
-                    //if(isOnlyPSHOrACKFlagSet(current.getTcpFlags())){
+                    if(isPSHOrACKFlagSet(current.getTcpFlags())){
                         pshAttacks.add(current);
-                    //}
+                    }
                 }
 
                 if(!pshAttacks.isEmpty()) {
@@ -236,17 +236,16 @@ public class DefaultEventCreator {
         return result;
     }
 
-    private static boolean isOnlyPSHOrACKFlagSet(HashMap<String, Boolean> flags) {
-        boolean result=true;
+    private static boolean isPSHOrACKFlagSet(HashMap<String, Boolean> flags) {
+        boolean result=false;
 
-        for(Map.Entry<String, Boolean> elem : flags.entrySet()) {
-            if(elem.getValue()) {
-                if(!(elem.getKey()=="PSH") || !(elem.getKey()=="ACK")) {
-                    result=false;
-                }
-            }
+        if(flags.get("PSH") || flags.get("ACK")) {
+            result=true;
         }
+
         return result;
     }
+
+
 }
 
