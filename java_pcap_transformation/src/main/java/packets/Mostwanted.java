@@ -46,6 +46,14 @@ public class Mostwanted {
         return success;
     }
 
+    public int getFullAmountOfPackets() {
+        int result=0;
+        for(Map.Entry<MostwantedPart, List<PcapPacket>> elem : packets.entrySet()) {
+            result=result+elem.getValue().size();
+        }
+        return result;
+    }
+
     public void setPackets(HashMap<MostwantedPart, List<PcapPacket>> packets) {
         this.packets = packets;
     }
@@ -57,8 +65,8 @@ public class Mostwanted {
                 "team=" + team +
                 ", service=" + service +
                 ", success=" + success +
-                ", flag='" + flag + '\'';
-
+                ", flag='" + flag + '\''+
+                " , amount of packets="+getFullAmountOfPackets()+"\n";
                 result+= "{"+MostwantedPart.HANDSHAKE.name()+":\n";
                 List<PcapPacket> handshake=packets.get(MostwantedPart.HANDSHAKE);
                 for(PcapPacket packet : handshake) {

@@ -189,6 +189,15 @@ public class DefaultEventCreator {
     public static List<Mostwanted> getPSHACKSessionsBetween(List<Session> handshakes, List<List<PcapPacket>> finishes, List<PcapPacket> allPackets,
                                                             InetAddress team, InetAddress service) {
         List<Mostwanted> result=new ArrayList<>();
+        List<PcapPacket> alreadyStored=new ArrayList<>();
+
+        /*for(Session session : handshakes) {
+            alreadyStored.addAll(session.getPackets());
+        }*/
+
+        /*for(List<PcapPacket> finish : finishes) {
+            alreadyStored.addAll(finish);
+        }*/
 
         for(int i=0; i<handshakes.size() && i<finishes.size(); ++i) {
             Mostwanted mostwanted=new Mostwanted(team, service);
@@ -209,18 +218,20 @@ public class DefaultEventCreator {
             else {
                 List<PcapPacket> pshAttacks=new ArrayList<>();
 
-                for(i=indexFirstPacketHandshake; i< allPackets.size(); ++i) {
-                    PcapPacket current=allPackets.get(i);
+                for(int j=indexFirstPacketHandshake; j< allPackets.size(); ++j) {
+                    PcapPacket current=allPackets.get(j);
                     if(!(current.getArrivalTime().before(timestampFinish))) {
-                        System.out.println("i: "+i);
-                        break;
+                       break;
                     }
-                    if(isPSHOrACKFlagSet(current.getTcpFlags())){
+                    if(isPSHOrACKFlagSet(current.getTcpFlags()) && !alreadyStored.contains(current)){
                         pshAttacks.add(current);
+                        alreadyStored.add(current);
                     }
                 }
 
                 if(!pshAttacks.isEmpty()) {
+
+
                     mostwantedPackets.put(MostwantedPart.HANDSHAKE,handshakePackets);
                     mostwantedPackets.put(MostwantedPart.PSHACK, pshAttacks);
                     mostwantedPackets.put(MostwantedPart.FINISHING, finishesPackets);
@@ -236,11 +247,23 @@ public class DefaultEventCreator {
         return result;
     }
 
+
+    private static boolean isInAlreadyStored(List<PcapPacket> visited, List<PcapPacket> list) {
+        for(PcapPacket packet : list) {
+            if(visited.contains(packet)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isPSHOrACKFlagSet(HashMap<String, Boolean> flags) {
         boolean result=false;
 
         if(flags.get("PSH") || flags.get("ACK")) {
-            result=true;
+            if(flags.get("FIN")==false && flags.get("SYN")==false) {
+                result=true;
+            }
         }
 
         return result;

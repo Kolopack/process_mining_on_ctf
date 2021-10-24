@@ -27,4 +27,8 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+    public static String getTeamName() {
+        return teamName;
+    }
 }

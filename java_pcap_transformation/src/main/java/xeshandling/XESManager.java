@@ -15,6 +15,9 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class XESManager {
@@ -100,6 +103,11 @@ public class XESManager {
        dateTag.setAttribute("value","1970-01-01T00:00:00.000+00:00");
        globalEvent.appendChild(dateTag);
 
+       Element string=document.createElement("string");
+       string.setAttribute("key","concept:name");
+       string.setAttribute("value","");
+       globalEvent.appendChild(string);
+
        log.appendChild(globalEvent);
     }
 
@@ -123,8 +131,14 @@ public class XESManager {
 
     private void addNewTraceElement(Element trace) {
         modifyFileForAdding();
-        addTrace(trace);
+        addTraceOrAttributeToLog(trace);
         createXESFile();
+    }
+
+    public void addNewElementToLog(Element element) {
+       modifyFileForAdding();
+       addTraceOrAttributeToLog(element);
+       createXESFile();
     }
 
     private void modifyFileForAdding() {
@@ -132,7 +146,6 @@ public class XESManager {
        try(InputStream inputStream=new FileInputStream(filePath.toString())) {
             documentBuilder=documentBuilderFactory.newDocumentBuilder();
             document=documentBuilder.parse(inputStream);
-
 
        } catch (FileNotFoundException e) {
            e.printStackTrace();
@@ -145,9 +158,31 @@ public class XESManager {
        }
     }
 
-    private void addTrace(Element trace) {
+    private void addTraceOrAttributeToLog(Element trace) {
         NodeList allLog=document.getElementsByTagName("log");
         Node log=allLog.item(0);
         log.appendChild(trace);
+    }
+
+    private void addElementToTrace(Element element) {
+       NodeList allTrace=document.getElementsByTagName("trace");
+       Node log=allTrace.item(0);
+       log.appendChild(element);
+    }
+
+    public Element createSimpleElement(String name, HashMap<String, String> parameters) {
+        Element result=document.createElement(name);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            result.setAttribute(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    public Element createNestedElement(String name, ArrayList<Element> children) {
+        Element result=document.createElement(name);
+        for(Element elem : children) {
+            result.appendChild(elem);
+        }
+        return result;
     }
 }
