@@ -41,9 +41,8 @@ public class XESManager {
        } catch (ParserConfigurationException e) {
            logger.severe(e.getMessage());
        }
-
        setupBasicXESFormat();
-       createXESFile();
+       //createXESFile();
     }
 
     private void setupBasicXESFormat() {
@@ -130,15 +129,15 @@ public class XESManager {
     }
 
     private void addNewTraceElement(Element trace) {
-        modifyFileForAdding();
+        //modifyFileForAdding();
         addTraceOrAttributeToLog(trace);
-        createXESFile();
+        //createXESFile();
     }
 
     public void addNewElementToLog(Element element) {
-       modifyFileForAdding();
+       //modifyFileForAdding();
        addTraceOrAttributeToLog(element);
-       createXESFile();
+       //createXESFile();
     }
 
     private void modifyFileForAdding() {
@@ -184,5 +183,9 @@ public class XESManager {
             result.appendChild(elem);
         }
         return result;
+    }
+
+    public void finishFile() {
+       createXESFile();
     }
 }

@@ -1,5 +1,6 @@
 package creation;
 
+import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
 import org.w3c.dom.Element;
 import packets.Mostwanted;
@@ -70,19 +71,55 @@ public class MostwantedService extends AbstractXESService implements IService {
     private void createMostwantedXES(List<Mostwanted> mostwantedList, XESManager xesManager) {
         System.out.println("Nun wird XES gebaut :-)");
 
-        HashMap<String, String> serviceParameters=new HashMap<>();
-        serviceParameters.put("key", "service");
-        serviceParameters.put("value", MOSTWANTED);
-        Element service= xesManager.createSimpleElement("string", serviceParameters);
+        Element serviceName= getServiceNameElement(xesManager);
+        xesManager.addNewElementToLog(serviceName);
 
-        xesManager.addNewElementToLog(service);
+        Element teamName= getTeamNameElement(xesManager);
+        xesManager.addNewElementToLog(teamName);
 
-        System.out.println("Service-Name sollte hinzugefügt worden sein");
+        for(Mostwanted mostwanted : mostwantedList) {
+            Element mostwantedTrace=getTraceForMostwanted(mostwanted,xesManager);
+            xesManager.addNewElementToLog(mostwantedTrace);
+        }
+
+        xesManager.finishFile();
     }
 
-    /*private Element getTeamnameParameter() {
-        HashMap<String, String> teamnameParameters=new HashMap<>();
-        teamnameParameters.put("key","teamname");
+    private Element getServiceNameElement(XESManager xesManager) {
+        HashMap<String, String> serviceParameters=new HashMap<>();
+        serviceParameters.put(XESConstants.KEY_STRING, "service");
+        serviceParameters.put(XESConstants.VALUE_STRING, MOSTWANTED);
+        Element service= xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, serviceParameters);
+        return service;
+    }
 
-    }*/
+    private Element getTeamNameElement(XESManager xesManager) {
+        HashMap<String, String> teamnameParameters=new HashMap<>();
+        teamnameParameters.put(XESConstants.KEY_STRING,"teamname");
+        teamnameParameters.put(XESConstants.VALUE_STRING,getTeamName());
+        Element team=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,teamnameParameters);
+        return team;
+    }
+
+    private Element getTraceForMostwanted(Mostwanted mostwanted, XESManager xesManager) {
+
+        //Get Event-Element for Three-Way-Handshake
+        List<PcapPacket> handshakes=mostwanted.getThreeWayHandshakePackets();
+        Element handshakeEvent= ElementCreator.getHandShakeOrFinishEvent(handshakes,xesManager);
+
+        //TODO: here has to be things inbetween: PSHACKs and recognizing HTTP-GET f.i.
+
+
+        //Get Event-Element for Finishes
+        List<PcapPacket> finishes=mostwanted.getTCPFinishingPackets();
+        Element finishingEvent=ElementCreator.getHandShakeOrFinishEvent(finishes,xesManager);
+
+        ArrayList<Element> traceElements=new ArrayList<>();
+        traceElements.add(handshakeEvent);
+        traceElements.add(finishingEvent);
+
+        Element trace=xesManager.createNestedElement(XESConstants.TRACE_ARGUMENT,traceElements);
+        return trace;
+    }
+
 }
