@@ -14,12 +14,12 @@ public class PcapPacket implements Serializable {
     private Timestamp ArrivalTime; //Check if ip time same as tcp time
     private short fragmentOffset;
     private int ipHeaderLength;
-    private byte[] iPPayload;
+    private String iPPayload;
 
     //TCP-related parameters
     private int portSender;
     private int portReceiver;
-    private byte[] tcpPayload;
+    private String tcpPayload;
     private long seqNumber;
     private long ackNumber;
     private HashMap<String, Boolean> tcpFlags;
@@ -42,7 +42,7 @@ public class PcapPacket implements Serializable {
         this.ipHeaderLength = ipHeaderLength;
     }
 
-    public void setiPPayload(byte[] iPPayload) {
+    public void setiPPayload(String iPPayload) {
         this.iPPayload = iPPayload;
     }
 
@@ -54,7 +54,7 @@ public class PcapPacket implements Serializable {
         this.portReceiver = portReceiver;
     }
 
-    public void setTcpPayload(byte[] tcpPayload) {
+    public void setTcpPayload(String tcpPayload) {
         this.tcpPayload = tcpPayload;
     }
 
@@ -94,6 +94,14 @@ public class PcapPacket implements Serializable {
         return ipReceiver;
     }
 
+    public String getiPPayload() {
+        return iPPayload;
+    }
+
+    public String getTcpPayload() {
+        return tcpPayload;
+    }
+
     @Override
     public String toString() {
         return "PcapPacket{" +
@@ -103,10 +111,10 @@ public class PcapPacket implements Serializable {
                 ", ArrivalTime=" + ArrivalTime +
                 ", fragmentOffset=" + fragmentOffset +
                 ", ipHeaderLength=" + ipHeaderLength +
-                ", iPPayload=" + Arrays.toString(iPPayload) +
+                ", iPPayload=" + iPPayload +
                 ", portSender=" + portSender +
                 ", portReceiver=" + portReceiver +
-                ", tcpPayload=" + Arrays.toString(tcpPayload) +
+                ", tcpPayload=" + tcpPayload +
                 ", seqNumber=" + seqNumber +
                 ", ackNumber=" + ackNumber +
                 ", tcpFlags=" + tcpFlags +

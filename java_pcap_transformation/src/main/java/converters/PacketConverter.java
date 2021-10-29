@@ -8,6 +8,7 @@ import packets.TcpPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.Buffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public class PacketConverter {
 
         Optional<byte[]> ipPayload= Optional.of(ipPacket.getPayload().getArray());
         if(ipPayload.isPresent()) {
-            result.setiPPayload(ipPayload.get());
+            result.setiPPayload(new String(ipPayload.get(), StandardCharsets.UTF_8));
         }
         else {
             result.setiPPayload(null);
@@ -51,7 +52,7 @@ public class PacketConverter {
         if(tcpPacketOptional.isPresent()) {
             if(tcpPacketOptional.get().getPayload()!=null) {
                 Optional<byte[]> tcpPayloadArray=Optional.of(tcpPacketOptional.get().getPayload().getArray());
-                result.setTcpPayload(tcpPayloadArray.get());
+                result.setTcpPayload(new String(tcpPayloadArray.get(), StandardCharsets.UTF_8));
             }
             else {
                 result.setTcpPayload(null);

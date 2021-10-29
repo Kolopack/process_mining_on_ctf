@@ -2,6 +2,7 @@ package creation;
 
 import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
+import exceptions.UnavailableException;
 import org.w3c.dom.Element;
 import packets.Mostwanted;
 import packets.PcapPacket;
@@ -42,9 +43,17 @@ public class MostwantedService extends AbstractXESService implements IService {
         this.packetList = packetList;
         XESManager manager=new XESManager(xesPath, MOSTWANTED+"_"+getTeamName());
 
-        if (isOrderOfPacketsTrue()) {
-            logger.info("Packets are in correct order");
+        try {
+            if (isOrderOfPacketsTrue()) {
+                logger.info("Packets are in correct order");
+            }
+            else {
+                throw new UnavailableException();
+            }
+        } catch (UnavailableException e) {
+            e.printStackTrace();
         }
+
         List<Session> handshakes = new ArrayList<>();
         List<List<PcapPacket>> finishes=new ArrayList<>();
 
@@ -56,15 +65,14 @@ public class MostwantedService extends AbstractXESService implements IService {
         System.out.println("Handshakes-count: "+handshakes.size());
         System.out.println("Finishes-count: "+finishes.size());
 
-        /*System.out.println("The following Mostwanteds were detected: ("+mostwanteds.size()+")");
+        System.out.println("The following Mostwanteds were detected: ("+mostwanteds.size()+")");
         int counter=1;
-        for(Mostwanted mostwanted : mostwanteds) {
+        Mostwanted first=mostwanteds.get(0);
             System.out.println("Counter: "+counter);
             System.out.println("*");
-            System.out.println(mostwanted);
+            System.out.println(first);
             System.out.println("*");
-            ++counter;
-        }*/
+
         createMostwantedXES(mostwanteds, manager);
     }
 
