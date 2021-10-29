@@ -12,4 +12,7 @@ public class XESConstants {
     public static final String STRING_ARGUMENT="string";
     public static final String DATE_ARGUMENT="date";
     public static final String TRACE_ARGUMENT="trace";
+
+    public static final String HANDSHAKE_CONCEPT_NAME="Established handshake";
+    public static final String FINISHING_CONCEPT_NAME="Finish connection";
 }

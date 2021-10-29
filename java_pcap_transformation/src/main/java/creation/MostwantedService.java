@@ -113,17 +113,21 @@ public class MostwantedService extends AbstractXESService implements IService {
 
         //Get Event-Element for Three-Way-Handshake
         List<PcapPacket> handshakes=mostwanted.getThreeWayHandshakePackets();
-        Element handshakeEvent= ElementCreator.getHandShakeOrFinishEvent(handshakes,xesManager);
+        Element handshakeEvent= ElementCreator.getHandShakeOrFinishEvent(handshakes,xesManager,XESConstants.HANDSHAKE_CONCEPT_NAME);
 
         //TODO: here has to be things inbetween: PSHACKs and recognizing HTTP-GET f.i.
-
+        List<PcapPacket> pshAckPackets=mostwanted.getPSHACKAttacks();
+        ArrayList<Element>pshAckEvents=ElementCreator.getEventsOfPSHACK(pshAckPackets,xesManager);
 
         //Get Event-Element for Finishes
         List<PcapPacket> finishes=mostwanted.getTCPFinishingPackets();
-        Element finishingEvent=ElementCreator.getHandShakeOrFinishEvent(finishes,xesManager);
+        Element finishingEvent=ElementCreator.getHandShakeOrFinishEvent(finishes,xesManager,XESConstants.FINISHING_CONCEPT_NAME);
 
         ArrayList<Element> traceElements=new ArrayList<>();
         traceElements.add(handshakeEvent);
+        for(Element element : pshAckEvents) {
+            traceElements.add(element);
+        }
         traceElements.add(finishingEvent);
 
         Element trace=xesManager.createNestedElement(XESConstants.TRACE_ARGUMENT,traceElements);

@@ -7,6 +7,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import packets.PcapPacket;
 
+import javax.xml.stream.events.EndElement;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ElementCreator {
-    private static final String HANDSHAKE_CONCEPT_NAME="Established handshake";
-
 
     private static Document document;
 
@@ -40,27 +39,21 @@ public class ElementCreator {
         return result;
     }
 
-    public static Element getHandShakeOrFinishEvent(List<PcapPacket> packets, XESManager xesManager) {
+    public static Element getHandShakeOrFinishEvent(List<PcapPacket> packets, XESManager xesManager, String conceptName) {
         PcapPacket firstPacketHandshake=packets.get(0);
         PcapPacket lastPacketHandshake=packets.get(packets.size()-1);
 
         HashMap<String,String> conceptNameArguments=new HashMap<>();
         conceptNameArguments.put(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
-        conceptNameArguments.put(XESConstants.VALUE_STRING,HANDSHAKE_CONCEPT_NAME);
-        Element conceptName=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptNameArguments);
+        conceptNameArguments.put(XESConstants.VALUE_STRING,conceptName);
+        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptNameArguments);
 
-        HashMap<String,String> initiatorArguments=new HashMap<>();
-        initiatorArguments.put(XESConstants.KEY_STRING,XESConstants.INITIATOR_STRING);
-        initiatorArguments.put(XESConstants.VALUE_STRING,firstPacketHandshake.getIpSender().getHostAddress());
-        Element initiatorElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,initiatorArguments);
+        Element initiatorElement=getRequesterOrInitiator(firstPacketHandshake,xesManager);
 
-        HashMap<String,String> dateArguments=new HashMap<>();
-        dateArguments.put(XESConstants.KEY_STRING,XESConstants.TIME_NAME);
-        dateArguments.put(XESConstants.VALUE_STRING,lastPacketHandshake.getArrivalTime().toString());
-        Element dateElement=xesManager.createSimpleElement(XESConstants.DATE_ARGUMENT,dateArguments);
+        Element dateElement=getDateElement(lastPacketHandshake,xesManager);
 
         ArrayList<Element> elements=new ArrayList<>();
-        elements.add(conceptName);
+        elements.add(conceptElement);
         elements.add(initiatorElement);
         elements.add(dateElement);
 
@@ -68,18 +61,19 @@ public class ElementCreator {
         return handshakeOrFinishEvent;
     }
 
-    public Element getEventsOfPSHACK(List<PcapPacket> packets, XESManager xesManager) {
+    public static ArrayList<Element> getEventsOfPSHACK(List<PcapPacket> packets, XESManager xesManager) {
 
-        ArrayList<Element> elements=new ArrayList<>();
+        ArrayList<Element> result=new ArrayList<>();
         for(PcapPacket packet : packets) {
-            isHTTPRequesting(packet.getTcpPayload()) {
+            if(isHTTPRequesting(packet.getTcpPayload())) {
                 Element httpEvent=getHTTPEventElement(packet, xesManager);
-                elements.add(httpEvent);
+                result.add(httpEvent);
             }
         }
+        return result;
     }
 
-    private boolean isHTTPRequesting(String payload) {
+    private static boolean isHTTPRequesting(String payload) {
         if(payload==null) {
             return false;
         }
@@ -89,16 +83,7 @@ public class ElementCreator {
         return false;
     }
 
-    private Element getHTTPEventElement(PcapPacket packet, XESManager xesManager) {
-        /*
-        <event>
-			<string key="concept:name" value="HTTP-Request"/>
-			<string key="HTTP-method" value="GET"/>
-			<string key="fullURI" value="http://10.14.1.9:2048/"/>
-			<string key="requester" value="10.13.146.1"/>
-			<date key="time:timestamp" value="2010-12-03T21:36:47:534798" / >
-		</event>
-        */
+    private static Element getHTTPEventElement(PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> conceptArguments=new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
         conceptArguments.put(XESConstants.VALUE_STRING,"HTTP-Request");
@@ -106,7 +91,7 @@ public class ElementCreator {
 
         HashMap<String, String> methodArguments=new HashMap<>();
         methodArguments.put(XESConstants.KEY_STRING,"HTTP-method");
-        String httpMethod=getHTTPMethod(packet.getTcpPayload();
+        String httpMethod=getHTTPMethod(packet.getTcpPayload());
         if(httpMethod==null) {
             throw new NoMethodFoundException();
         }
@@ -118,16 +103,22 @@ public class ElementCreator {
         uriArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
         Element uriElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,uriArguments);
 
-        HashMap<String, String> requesterArguments=new HashMap<>();
-        requesterArguments.put(XESConstants.KEY_STRING,"requester");
-        requesterArguments.put(XESConstants.VALUE_STRING,packet.getIpSender().getHostAddress());
-        Element requester=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,)
+        Element requester=getRequesterOrInitiator(packet,xesManager);
 
-        HashMap<String, String> dateArguments=new HashMap<>();
-        dateArguments
+        Element date=getDateElement(packet,xesManager);
+
+        ArrayList<Element> elements=new ArrayList<>();
+        elements.add(conceptName);
+        elements.add(httpMethodElement);
+        elements.add(uriElement);
+        elements.add(requester);
+        elements.add(date);
+
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
+        return result;
     }
 
-    private String getHTTPMethod(String payload) {
+    private static String getHTTPMethod(String payload) {
         String result=getFirstWordRight(payload);
         if(result!=null) {
             return result;
@@ -140,7 +131,7 @@ public class ElementCreator {
         return null;
     }
 
-    private String getFirstWordRight(String payload) {
+    private static String getFirstWordRight(String payload) {
         String firstWord=payload.substring(0, payload.indexOf(' '));
 
         switch (firstWord) {
@@ -156,7 +147,7 @@ public class ElementCreator {
         return null;
     }
 
-    private String simplyCheckContaining(String payload) {
+    private static String simplyCheckContaining(String payload) {
         if(payload.contains(HTTPConstants.GET)) {
             return HTTPConstants.GET;
         }
@@ -172,7 +163,7 @@ public class ElementCreator {
         return null;
     }
 
-    private InetAddress getExtractedHostAddress(String payload) {
+    private static InetAddress getExtractedHostAddress(String payload) {
         InetAddress result=null;
 
         payload=payload.trim();
@@ -193,6 +184,22 @@ public class ElementCreator {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        return result;
+    }
+
+    private static Element getDateElement(PcapPacket packet, XESManager xesManager) {
+        HashMap<String, String> dateArguments=new HashMap<>();
+        dateArguments.put(XESConstants.KEY_STRING,XESConstants.TIME_NAME);
+        dateArguments.put(XESConstants.VALUE_STRING,packet.getArrivalTime().toString());
+        Element result=xesManager.createSimpleElement(XESConstants.DATE_ARGUMENT,dateArguments);
+        return result;
+    }
+
+    private static Element getRequesterOrInitiator(PcapPacket packet, XESManager xesManager) {
+        HashMap<String, String> arguments=new HashMap<>();
+        arguments.put(XESConstants.KEY_STRING,XESConstants.INITIATOR_STRING);
+        arguments.put(XESConstants.VALUE_STRING,packet.getIpSender().getHostAddress());
+        Element result=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,arguments);
         return result;
     }
 }
