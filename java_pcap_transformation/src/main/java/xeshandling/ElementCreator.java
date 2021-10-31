@@ -18,6 +18,7 @@ import java.util.Map;
 public class ElementCreator {
 
     private static Document document;
+    private static final String EXTRACTINGINDEXSTRING="Host:";
 
     public ElementCreator(Document document) {
         this.document=document;
@@ -77,7 +78,8 @@ public class ElementCreator {
         if(payload==null) {
             return false;
         }
-        if(payload.contains("HTTP")) {
+        //We only want HTTP-REST requests, but not the ones which are just requesting of favicons
+        if(payload.contains("HTTP") && !payload.contains("favicon")) {
             return true;
         }
         return false;
@@ -168,18 +170,20 @@ public class ElementCreator {
 
         payload=payload.trim();
 
-        int index=payload.indexOf("Host:");
-        String rest=payload.substring(index);
+        int index=payload.indexOf(EXTRACTINGINDEXSTRING);
+        String rest=payload.substring(index+EXTRACTINGINDEXSTRING.length()+1);
+        System.out.println("Rest: "+rest);
         String addressString="";
 
         for(int i=0; i<rest.length();++i) {
             char temp=rest.charAt(i);
-            if(Character.isLetter(temp)) {
+            if(Character.isLetter(temp) || temp==':') {
                 break;
             }
             addressString+=temp;
         }
         try {
+            System.out.println("AddressString: "+addressString);
             result = InetAddress.getByName(addressString);
         } catch (UnknownHostException e) {
             e.printStackTrace();

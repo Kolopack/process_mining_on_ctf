@@ -121,6 +121,7 @@ public class MostwantedService extends AbstractXESService implements IService {
 
         //Get Event-Element for Finishes
         List<PcapPacket> finishes=mostwanted.getTCPFinishingPackets();
+
         Element finishingEvent=ElementCreator.getHandShakeOrFinishEvent(finishes,xesManager,XESConstants.FINISHING_CONCEPT_NAME);
 
         ArrayList<Element> traceElements=new ArrayList<>();
