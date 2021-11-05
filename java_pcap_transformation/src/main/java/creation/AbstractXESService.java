@@ -40,6 +40,7 @@ public abstract class AbstractXESService {
             if(packet.getArrivalTime().before(before.getArrivalTime())){
                 result=false;
             }
+            before=packet;
         }
         return result;
     }
