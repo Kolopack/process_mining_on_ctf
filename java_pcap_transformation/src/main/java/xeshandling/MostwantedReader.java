@@ -35,13 +35,13 @@ public class MostwantedReader {
 
         for (int i = 0; i < list.size(); ++i) {
             System.out.println("Current i: " + i);
+            PcapPacket current = list.get(i);
 
             if (isMostwantedFinished()) {
                 Mostwanted mostwanted = buildMostwanted(team, service);
                 result.add(mostwanted);
                 resetInstanceVariables();
             }
-            PcapPacket current = list.get(i);
 
             if (firstHandshake == null && isSYNpacket(current)) {
                 firstHandshake = current;
@@ -59,12 +59,7 @@ public class MostwantedReader {
                 thirdHandshake = current;
                 continue;
             }
-            if (firstHandshake != null && secondHandshake != null && thirdHandshake != null &&
-                    isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
-            ) {
-                inbetween.add(current);
-                continue;
-            }
+
             if (firstFinish == null && isFirstFinishPacket(current) && isAlreadyHandshake()) {
                 firstFinish = current;
                 continue;
@@ -77,6 +72,13 @@ public class MostwantedReader {
                 thirdFinish = current;
                 continue;
             }
+            if (firstHandshake != null && secondHandshake != null && thirdHandshake != null &&
+                    isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
+            ) {
+                inbetween.add(current);
+                continue;
+            }
+            System.out.println("Nothing out of Mostwanted - ignored.");
         }
         return result;
     }
@@ -160,7 +162,7 @@ public class MostwantedReader {
     }
 
     private boolean isFirstFinishPacket(PcapPacket packet) {
-        if (packet.getTcpFlags().get("FIN")) {
+        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getiPPayload(),packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -169,7 +171,7 @@ public class MostwantedReader {
     private boolean isSecondFinishPacket(PcapPacket packet) {
         if (packet.getIpSender().equals(firstFinish.getIpReceiver()) && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (firstFinish.getSeqNumber() + 1)
-                && packet.getSeqNumber() == firstFinish.getAckNumber()) {
+                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -177,7 +179,8 @@ public class MostwantedReader {
 
     private boolean isThirdFinishPacket(PcapPacket packet) {
         if (packet.getIpSender().equals(firstFinish.getIpSender()) && packet.getTcpFlags().get("ACK")
-                && packet.getAckNumber() == (secondFinish.getSeqNumber() + 1)) {
+                && packet.getAckNumber() == (secondFinish.getSeqNumber() + 1)
+                && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -190,11 +193,19 @@ public class MostwantedReader {
             if (flags.get("FIN") == false && flags.get("SYN") == false) {
                 result = true;
             }
-            if (iPPayload!=null && iPPayload.contains(HTTP_CONTINUATION_STRING) ||
-                    (tcpPayload!=null && tcpPayload.contains(HTTP_CONTINUATION_STRING))) {
-                result = true;
+            if(isHTTPContinuation(iPPayload,tcpPayload)) {
+                result=true;
             }
+
         }
         return result;
+    }
+
+    private static boolean isHTTPContinuation(String iPPayload, String tcpPayload) {
+        if (iPPayload!=null && iPPayload.contains(HTTP_CONTINUATION_STRING) ||
+                (tcpPayload!=null && tcpPayload.contains(HTTP_CONTINUATION_STRING))) {
+            return true;
+        }
+        return false;
     }
 }
