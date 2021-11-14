@@ -1,7 +1,5 @@
 package xeshandling;
 
-import creation.AbstractXESService;
-import creation.IService;
 import enumerations.MostwantedPart;
 import packets.Mostwanted;
 import packets.PcapPacket;
@@ -35,12 +33,17 @@ public class MostwantedReader {
 
         for (int i = 0; i < list.size(); ++i) {
             System.out.println("Current i: " + i);
+
+
             PcapPacket current = list.get(i);
 
             if (isMostwantedFinished()) {
                 Mostwanted mostwanted = buildMostwanted(team, service);
                 result.add(mostwanted);
                 resetInstanceVariables();
+            }
+            if(i==32) {
+                System.out.println("");
             }
 
             if (firstHandshake == null && isSYNpacket(current)) {
@@ -72,13 +75,35 @@ public class MostwantedReader {
                 thirdFinish = current;
                 continue;
             }
+            if(firstFinish==null && isFirstFinishPacket(current)) {
+                firstFinish=current;
+                continue;
+            }
             if (firstHandshake != null && secondHandshake != null && thirdHandshake != null &&
                     isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
             ) {
                 inbetween.add(current);
                 continue;
             }
+
+            //Wenn schon voll -> abschließen
+            if(firstFinish!=null && firstHandshake!=null) {
+                Mostwanted mostwanted = buildMostwanted(team, service);
+                result.add(mostwanted);
+                resetInstanceVariables();
+                continue;
+            }
+            if(firstHandshake!=null && isSYNpacket(current)) {
+                Mostwanted mostwanted = buildMostwanted(team, service);
+                result.add(mostwanted);
+                resetInstanceVariables();
+                firstHandshake=current;
+                client = current.getIpSender();
+                server = current.getIpReceiver();
+                continue;
+            }
             System.out.println("Nothing out of Mostwanted - ignored.");
+            //System.out.println("Ignored was the packet:\n"+current);
         }
         return result;
     }
@@ -97,9 +122,15 @@ public class MostwantedReader {
         HashMap<MostwantedPart, List<PcapPacket>> packets = new HashMap<>();
 
         List<PcapPacket> handshakes = new ArrayList<>();
-        handshakes.add(firstHandshake);
-        handshakes.add(secondHandshake);
-        handshakes.add(thirdHandshake);
+        if(firstHandshake!=null) {
+            handshakes.add(firstHandshake);
+        }
+        if(secondHandshake!=null) {
+            handshakes.add(secondHandshake);
+        }
+        if(thirdHandshake!=null) {
+            handshakes.add(thirdHandshake);
+        }
         packets.put(MostwantedPart.HANDSHAKE, handshakes);
 
         packets.put(MostwantedPart.PSHACK, inbetween);
@@ -143,7 +174,7 @@ public class MostwantedReader {
     }
 
     private boolean isSecondPacketHandshake(PcapPacket packet, InetAddress server) {
-        if (packet.getIpSender().equals(server) && packet.getAckNumber() == (firstHandshake.getSeqNumber() + 1)) {
+        if (packet.getIpSender().equals(server) /*&& packet.getAckNumber() == (firstHandshake.getSeqNumber() + 1)*/) {
             if (packet.getTcpFlags().get("SYN") && packet.getTcpFlags().get("ACK")) {
                 return true;
             }

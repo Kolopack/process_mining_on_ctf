@@ -49,15 +49,25 @@ public class ElementCreator {
         conceptNameArguments.put(XESConstants.VALUE_STRING,conceptName);
         Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptNameArguments);
 
-        Element initiatorElement=getRequesterOrInitiator(firstPacketHandshake,xesManager);
+        Element initiatorElement=null;
+        if(firstPacketHandshake!=null) {
+            initiatorElement=getRequesterOrInitiator(firstPacketHandshake,xesManager);
+        }
+        Element dateElement=null;
+        if(lastPacketHandshake!=null) {
+            dateElement=getDateElement(lastPacketHandshake,xesManager);
+        }
 
-        Element dateElement=getDateElement(lastPacketHandshake,xesManager);
 
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(conceptElement);
-        elements.add(initiatorElement);
-        elements.add(dateElement);
 
+        if(initiatorElement!=null) {
+            elements.add(initiatorElement);
+        }
+        if(dateElement!=null) {
+            elements.add(dateElement);
+        }
         Element handshakeOrFinishEvent=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
         return handshakeOrFinishEvent;
     }
