@@ -50,7 +50,7 @@ public class ElementCreator {
 
         Element initiatorElement = null;
         if (firstPacketHandshake != null) {
-            initiatorElement = getRequesterOrInitiator(firstPacketHandshake, xesManager);
+            initiatorElement = getRequesterOrInitiator(firstPacketHandshake, xesManager, XESConstants.INITIATOR_STRING);
         }
         Element dateElement = null;
         if (lastPacketHandshake != null) {
@@ -81,11 +81,8 @@ public class ElementCreator {
             }
 
         }
-        List<Element> pshattacks = getPSHACKEvents(packets, xesManager);
-        for (Element element : pshattacks) {
-            result.add(element);
-        }
-
+        ArrayList<Element> pshattacks = getPSHACKEvents(packets, xesManager);
+        result.addAll(pshattacks);
         return result;
     }
 
@@ -120,7 +117,7 @@ public class ElementCreator {
         uriArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
         Element uriElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, uriArguments);
 
-        Element requester = getRequesterOrInitiator(packet, xesManager);
+        Element requester = getRequesterOrInitiator(packet, xesManager, XESConstants.INITIATOR_STRING);
 
         Element date = getDateElement(packet, xesManager);
 
@@ -135,8 +132,8 @@ public class ElementCreator {
         return result;
     }
 
-    private static List<Element> getPSHACKEvents(List<PcapPacket> packets, XESManager xesManager) {
-        List<Element> result=new ArrayList<>();
+    private static ArrayList<Element> getPSHACKEvents(List<PcapPacket> packets, XESManager xesManager) {
+        ArrayList<Element> result=new ArrayList<>();
 
         for(int i=0; i<packets.size();++i) {
             PcapPacket current=packets.get(i);
@@ -163,9 +160,36 @@ public class ElementCreator {
         conceptArguments.put(XESConstants.VALUE_STRING, "PSH ACK");
         Element conceptName = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptArguments);
 
-        Element sender=getRequesterOrInitiator(pshack,xesManager);
+        Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
+        Element receiver=getDestinationOrReceiver(pshack,xesManager,XESConstants.RECEIVER_STRING);
 
+        HashMap<String, String> ackParameters=new HashMap<>();
+        ackParameters.put(XESConstants.KEY_STRING,XESConstants.ACKRETURNED_STRING);
+        if(ack==null) {
+            ackParameters.put(XESConstants.VALUE_STRING,"false");
+        }
+        else {
+            ackParameters.put(XESConstants.VALUE_STRING, "true");
+        }
+        Element ackElement=xesManager.createSimpleElement(XESConstants.BOOLEAN_ARGUMENT,ackParameters);
+
+        Element dateElement=null;
+        if(ack==null) {
+            dateElement=getDateElement(pshack,xesManager);
+        }
+        else {
+            dateElement=getDateElement(ack,xesManager);
+        }
+        ArrayList<Element> elements=new ArrayList<>();
+        elements.add(conceptName);
+        elements.add(sender);
+        elements.add(receiver);
+        elements.add(ackElement);
+        elements.add(dateElement);
+
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
+        return result;
     }
 
     private static String getHTTPMethod(String payload) {
@@ -220,7 +244,6 @@ public class ElementCreator {
 
         int index = payload.indexOf(EXTRACTINGINDEXSTRING);
         String rest = payload.substring(index + EXTRACTINGINDEXSTRING.length() + 1);
-        System.out.println("Rest: " + rest);
         String addressString = "";
 
         for (int i = 0; i < rest.length(); ++i) {
@@ -231,7 +254,6 @@ public class ElementCreator {
             addressString += temp;
         }
         try {
-            System.out.println("AddressString: " + addressString);
             result = InetAddress.getByName(addressString);
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -247,10 +269,18 @@ public class ElementCreator {
         return result;
     }
 
-    private static Element getRequesterOrInitiator(PcapPacket packet, XESManager xesManager) {
+    private static Element getRequesterOrInitiator(PcapPacket packet, XESManager xesManager, String description) {
         HashMap<String, String> arguments = new HashMap<>();
-        arguments.put(XESConstants.KEY_STRING, XESConstants.INITIATOR_STRING);
+        arguments.put(XESConstants.KEY_STRING, description);
         arguments.put(XESConstants.VALUE_STRING, packet.getIpSender().getHostAddress());
+        Element result = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
+        return result;
+    }
+
+    private static Element getDestinationOrReceiver(PcapPacket packet, XESManager xesManager, String description) {
+        HashMap<String, String> arguments = new HashMap<>();
+        arguments.put(XESConstants.KEY_STRING, description);
+        arguments.put(XESConstants.VALUE_STRING, packet.getIpReceiver().getHostAddress());
         Element result = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
         return result;
     }

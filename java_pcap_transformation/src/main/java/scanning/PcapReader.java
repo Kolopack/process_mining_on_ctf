@@ -185,13 +185,6 @@ public class PcapReader {
         return true;
     }
 
-    public void printSerializedPackets() {
-        for(Storing s : storingList) {
-            List<PcapPacket> packets=s.readTempPacketsList();
-            System.out.println(packets);
-        }
-    }
-
     private void createXES() {
         IService service= ServiceContext.createServiceClass(serviceName, teamName, ipTeam);
         service.createXESwithList(getFullServiceList(), pathToXES);

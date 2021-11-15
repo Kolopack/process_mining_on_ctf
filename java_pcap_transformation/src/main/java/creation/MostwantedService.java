@@ -65,13 +65,6 @@ public class MostwantedService extends AbstractXESService implements IService {
         //List<Mostwanted> mostwanteds = mostwantedReader.getMostwanteds(packetList,getTeamIP(),MOSTWANTED_IP);
 
         System.out.println("The following Mostwanteds were detected: (" + mostwanteds.size() + ")");
-        int counter = 1;
-        Mostwanted first = mostwanteds.get(0);
-        System.out.println("Counter: " + counter);
-        System.out.println("*");
-        System.out.println(first);
-        System.out.println("*");
-
         createMostwantedXES(mostwanteds, manager);
     }
 
