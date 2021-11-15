@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 public class DefaultEventCreator {
     private static Logger logger = Logger.getLogger(DefaultEventCreator.class.getName());
+    private static final String HTTP_CONTINUATION_STRING = "COMMAND:";
 
     public static List<Session> checkForThreeWayHandshake(List<PcapPacket> list) {
         List<Session> result = new ArrayList<>();
@@ -73,13 +74,13 @@ public class DefaultEventCreator {
         return new Pair(result, null);
     }
 
-    public static Pair checkForThirdPacketThreeWayHandshake(List<PcapPacket> list, int index, Long seqSecond, Long ackFirst, InetAddress client) {
+    public static Pair checkForThirdPacketThreeWayHandshake(List<PcapPacket> list, int index, Long seqSecond, Long ackSecond, InetAddress client) {
 
 
         for (int i = index + 1; i < list.size(); ++i) {
             PcapPacket packet = list.get(i);
             if (packet.getIpSender().equals(client) && packet.getAckNumber() == (seqSecond + 1)
-                    && packet.getSeqNumber() == ackFirst) {
+                    && packet.getSeqNumber() == ackSecond) {
                 if (packet.getTcpFlags().get("ACK")) {
                     return new Pair<>(i, packet);
                 }
@@ -99,7 +100,8 @@ public class DefaultEventCreator {
         for (int i = 0; i < list.size(); ++i) {
             PcapPacket current = list.get(i);
 
-            if (current.getTcpFlags().get("FIN")) {
+            if (current.getTcpFlags().get("FIN")
+                    && !isHTTPContinuation(current.getiPPayload(), current.getTcpPayload())) {
                 List<PcapPacket> finish = new ArrayList<>();
 
                 partnerA = current.getIpSender();
@@ -136,7 +138,8 @@ public class DefaultEventCreator {
 
         for (PcapPacket packet : list) {
             if (packet.getIpSender().equals(partnerB) && packet.getTcpFlags().get("ACK")
-                    && packet.getAckNumber() == (seq + 1) && packet.getSeqNumber() == ack) {
+                    && packet.getAckNumber() == (seq + 1) && packet.getSeqNumber() == ack
+                    && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
                 result = packet.getSeqNumber();
                 resultList.add(new Pair(result, packet));
                 return resultList;
@@ -155,27 +158,13 @@ public class DefaultEventCreator {
         return resultList;
     }
 
-    /*private static Pair checkForSeparateFINpacket(List<PcapPacket> list, Long seq, Long ack, InetAddress partnerB) {
-        Long result=null;
-
-        //Second case: ACK and FIN are not sent in the same packet
-        for(PcapPacket packet: list) {
-            if( packet.getIpSender().equals(partnerB) && packet.getTcpFlags().get("ACK")
-                    && packet.getAckNumber()==(seq+1) && !packet.getTcpFlags().get("FIN")
-                    && packet.getSeqNumber()==ack) {
-                    result=packet.getSeqNumber();
-                    return new Pair(result,packet);
-            }
-        }
-        return new Pair(result,null);
-    }*/
-
     public static Pair checkForThirdPacketFinishing(List<PcapPacket> list, Long seqB, InetAddress partnerA) {
         boolean result = false;
 
         for (PcapPacket packet : list) {
             if (packet.getIpSender().equals(partnerA) && packet.getTcpFlags().get("ACK")
-                    && packet.getAckNumber() == (seqB + 1)) {
+                    && packet.getAckNumber() == (seqB + 1)
+                    && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
                 result = true;
                 return new Pair(result, packet);
             }
@@ -209,62 +198,53 @@ public class DefaultEventCreator {
             PcapPacket firstPacketFinishes = finishes.get(i).get(0);
             Timestamp timestampFinish = firstPacketFinishes.getArrivalTime();
 
-            int ausweichIndex=i+1;
-            while (timestampHandshake.after(timestampFinish) && ausweichIndex<finishes.size()) {
-                System.out.println("Had to take the next one sadly.");
-                finishesPackets=finishes.get(ausweichIndex);
-                firstPacketFinishes = finishes.get(i).get(0);
-                timestampFinish = firstPacketFinishes.getArrivalTime();
-                ++ausweichIndex;
+            List<PcapPacket> pshAttacks = new ArrayList<>();
+
+            for (int j = indexFirstPacketHandshake; j < allPackets.size(); ++j) {
+                PcapPacket current = allPackets.get(j);
+                if (!(current.getArrivalTime().before(timestampFinish))) {
+                    break;
+                }
+                if (isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
+                        && !alreadyStored.contains(current)) {
+                    pshAttacks.add(current);
+                    alreadyStored.add(current);
+                }
             }
 
-            if (timestampHandshake.after(timestampFinish)) {
-                System.out.println("Oh shit, this loop was not enough");
-                System.out.println("Handshake:");
-                for (PcapPacket packet : handshakePackets) {
-                    System.out.println(packet);
-                }
-                System.out.println("Finish:");
-                for (PcapPacket packet : finishesPackets) {
-                    System.out.println(packet);
-                }
-                throw new TimestampsNotFittingException();
-            } else {
-                List<PcapPacket> pshAttacks = new ArrayList<>();
+            if (!pshAttacks.isEmpty()) {
+                mostwantedPackets.put(MostwantedPart.HANDSHAKE, handshakePackets);
+                mostwantedPackets.put(MostwantedPart.PSHACK, pshAttacks);
+                mostwantedPackets.put(MostwantedPart.FINISHING, finishesPackets);
 
-                for (int j = indexFirstPacketHandshake; j < allPackets.size(); ++j) {
-                    PcapPacket current = allPackets.get(j);
-                    if (!(current.getArrivalTime().before(timestampFinish))) {
-                        break;
-                    }
-                    if (isPSHOrACKFlagSet(current.getTcpFlags()) && !alreadyStored.contains(current)) {
-                        pshAttacks.add(current);
-                        alreadyStored.add(current);
-                    }
-                }
-
-                if (!pshAttacks.isEmpty()) {
-                    mostwantedPackets.put(MostwantedPart.HANDSHAKE, handshakePackets);
-                    mostwantedPackets.put(MostwantedPart.PSHACK, pshAttacks);
-                    mostwantedPackets.put(MostwantedPart.FINISHING, finishesPackets);
-
-                    mostwanted.setPackets(mostwantedPackets);
-                    result.add(mostwanted);
-                }
+                mostwanted.setPackets(mostwantedPackets);
+                result.add(mostwanted);
             }
         }
         return result;
     }
 
-    private static boolean isPSHOrACKFlagSet(HashMap<String, Boolean> flags) {
+    private static boolean isPSHOrACKFlagSet(HashMap<String, Boolean> flags,
+                                             String ipPayload, String tcpPayload) {
         boolean result = false;
 
         if (flags.get("PSH") || flags.get("ACK")) {
             if (flags.get("FIN") == false && flags.get("SYN") == false) {
                 result = true;
             }
+            if (isHTTPContinuation(ipPayload, tcpPayload)) {
+                result = true;
+            }
         }
         return result;
+    }
+
+    private static boolean isHTTPContinuation(String iPPayload, String tcpPayload) {
+        if (iPPayload != null && iPPayload.contains(HTTP_CONTINUATION_STRING) ||
+                (tcpPayload != null && tcpPayload.contains(HTTP_CONTINUATION_STRING))) {
+            return true;
+        }
+        return false;
     }
 
 }
