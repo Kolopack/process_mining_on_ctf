@@ -4,13 +4,10 @@ import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
 import exceptions.UnavailableException;
 import org.w3c.dom.Element;
-import packets.Mostwanted;
+import serviceRepresentation.Mostwanted;
 import packets.PcapPacket;
 import packets.Session;
-import xeshandling.DefaultEventCreator;
-import xeshandling.ElementCreator;
-import xeshandling.MostwantedReader;
-import xeshandling.XESManager;
+import xeshandling.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -40,9 +37,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         if (packetList.isEmpty()) {
             throw new PacketListIsEmptyException();
         }
-
         this.packetList = packetList;
-        XESManager manager = new XESManager(xesPath, MOSTWANTED + "_" + getTeamName());
 
         try {
             if (isOrderOfPacketsTrue()) {
@@ -54,6 +49,8 @@ public class MostwantedService extends AbstractXESService implements IService {
             e.printStackTrace();
         }
 
+        XESManager manager = new XESManager(xesPath, MOSTWANTED + "_" + getTeamName());
+
         List<Session> handshakes = DefaultEventCreator.checkForThreeWayHandshake(packetList);
         List<List<PcapPacket>> finishes = DefaultEventCreator.checkForFinishing(packetList);
 
@@ -61,7 +58,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         System.out.println("Finishes-count: " + finishes.size());
 
         MostwantedReader mostwantedReader=new MostwantedReader();
-        List<Mostwanted> mostwanteds = DefaultEventCreator.getPSHACKSessionsBetween(handshakes, finishes, packetList, getTeamIP(), MOSTWANTED_IP);
+        List<Mostwanted> mostwanteds = MostwantedEventCreator.getPSHACKSessionsBetween(handshakes, finishes, packetList, getTeamIP(), MOSTWANTED_IP);
         //List<Mostwanted> mostwanteds = mostwantedReader.getMostwanteds(packetList,getTeamIP(),MOSTWANTED_IP);
 
         System.out.println("The following Mostwanteds were detected: (" + mostwanteds.size() + ")");

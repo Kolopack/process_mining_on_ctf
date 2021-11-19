@@ -1,6 +1,12 @@
 package creation;
 
+import exceptions.PacketListIsEmptyException;
+import exceptions.UnavailableException;
 import packets.PcapPacket;
+import packets.Session;
+import xeshandling.DefaultEventCreator;
+import xeshandling.OvercovertEventCreator;
+import xeshandling.XESManager;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,7 +31,26 @@ public class OvercovertService extends AbstractXESService implements IService{
 
     @Override
     public void createXESwithList(List<PcapPacket> packetList, String xesPath) {
+        if(packetList.isEmpty()) {
+            throw new PacketListIsEmptyException();
+        }
+
         this.packetList=packetList;
+
+        try {
+            if (isOrderOfPacketsTrue()) {
+                logger.info("Packets are in correct order");
+            } else {
+                throw new UnavailableException();
+            }
+        } catch (UnavailableException e) {
+            e.printStackTrace();
+        }
+        XESManager xesManager=new XESManager(xesPath, OVERCOVERT+"_"+getTeamName());
+
+        List<Session> handshakes= DefaultEventCreator.checkForThreeWayHandshake(packetList);
+        List<PcapPacket> resets= OvercovertEventCreator.checkForConnectionResets(packetList);
+        List<PcapPacket> inbeetween;
     }
 
 }

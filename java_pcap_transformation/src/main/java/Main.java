@@ -1,3 +1,4 @@
+import packets.PcapPacket;
 import scanning.PcapReader;
 
 import java.net.InetAddress;
@@ -7,22 +8,35 @@ public class Main {
     private static final String pcapFilesDirectory ="C:/Users/simon/Documents/SS2021/Bachelorarbeit/Daten/pcap";
     private static final String pathToXES="C:/Users/simon/Desktop/";
 
-    private static final String ipTeam="10.13.146.0";
-    private static final String ipTeamMask="255.255.255.0";
-    private static final String ipService="10.14.1.9";
+    //Team Bushwhackers
+    private static final String ipBushwhackers ="10.13.146.0";
+    private static final String subnetmaskBushwhackers ="255.255.255.0";
     private static final String teamName="Bushwhackers";
-    private static final String serviceName="Mostwanted";
+
+    //Service Mostwanted
+    private static final String ipMostwanted ="10.14.1.9";
+    private static final String mostwantedName ="Mostwanted";
+
+    //Service Overcovert
+    private static final String ipOvercovert="10.14.1.10";
+    private static final String overcovertName="Overcovert";
 
     public static void main(String[] args) {
-        PcapReader reader=new PcapReader(teamName, serviceName, pathToXES);
+        PcapReader reader=new PcapReader(teamName, mostwantedName, pathToXES);
+        PcapReader readerOvercovert=new PcapReader(teamName,overcovertName,pathToXES);
 
         try{
-            InetAddress teamIp=InetAddress.getByName(ipTeam);
-            InetAddress serviceIp=InetAddress.getByName(ipService);
+            InetAddress teamIp=InetAddress.getByName(ipBushwhackers);
+            InetAddress mostwantedIp=InetAddress.getByName(ipMostwanted);
+            InetAddress overcovertIp=InetAddress.getByName(ipOvercovert);
 
             reader.importPcap(pcapFilesDirectory);
-            reader.readFiles(teamIp,ipTeamMask,serviceIp);
-            System.out.println("Finished storing");
+            reader.readFiles(teamIp, subnetmaskBushwhackers,mostwantedIp);
+            System.out.println("Finished storing - mostwanted");
+
+            readerOvercovert.importPcap(pcapFilesDirectory);
+            readerOvercovert.readFiles(teamIp,subnetmaskBushwhackers,overcovertIp);
+            System.out.println("Finished storing - overcovert");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

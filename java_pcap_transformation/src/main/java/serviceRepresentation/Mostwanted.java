@@ -1,6 +1,7 @@
-package packets;
+package serviceRepresentation;
 
 import enumerations.MostwantedPart;
+import packets.PcapPacket;
 
 import java.net.InetAddress;
 import java.util.HashMap;
