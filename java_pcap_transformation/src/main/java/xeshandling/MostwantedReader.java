@@ -1,8 +1,8 @@
 package xeshandling;
 
 import enumerations.MostwantedPart;
-import serviceRepresentation.Mostwanted;
 import packets.PcapPacket;
+import serviceRepresentation.Mostwanted;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

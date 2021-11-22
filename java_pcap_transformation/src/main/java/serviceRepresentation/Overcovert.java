@@ -1,35 +1,42 @@
 package serviceRepresentation;
 
+import enumerations.Handshakes;
+import enumerations.OvercovertPart;
 import packets.PcapPacket;
 
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Overcovert {
     private InetAddress teamIP;
-    private InetAddress serviceIP;
-    private List<PcapPacket> handshakes;
-    private List<PcapPacket> inbetween;
+    private Integer teamPort;
+    private HashMap<Handshakes,PcapPacket> handshakes;
+    private HashMap<OvercovertPart,List<PcapPacket>> inbetween;
     private PcapPacket reset;
 
-    public Overcovert(InetAddress teamIP, InetAddress serviceIP) {
-        this.teamIP = teamIP;
-        this.serviceIP = serviceIP;
+    public Overcovert(Integer teamPort) {
+        this.teamPort=teamPort;
     }
 
-    public List<PcapPacket> getHandshakes() {
+    public HashMap<Handshakes,PcapPacket> getHandshakes() {
         return handshakes;
     }
 
-    public void setHandshakes(List<PcapPacket> handshakes) {
+    public void setHandshakes(HashMap<Handshakes,PcapPacket> handshakes) {
         this.handshakes = handshakes;
     }
 
-    public List<PcapPacket> getInbetween() {
+    public void setHandshake(Handshakes type, PcapPacket packet) {
+        handshakes.put(type,packet);
+    }
+
+    public HashMap<OvercovertPart, List<PcapPacket>> getInbetween() {
         return inbetween;
     }
 
-    public void setInbetween(List<PcapPacket> inbetween) {
+    public void setInbetween(HashMap<OvercovertPart,List<PcapPacket>> inbetween) {
         this.inbetween = inbetween;
     }
 
@@ -41,17 +48,35 @@ public class Overcovert {
         this.reset = reset;
     }
 
+    public InetAddress getTeamIP() {
+        return teamIP;
+    }
+
+    public void setTeamIP(InetAddress teamIP) {
+        this.teamIP = teamIP;
+    }
+
+    public Integer getTeamPort() {
+        return teamPort;
+    }
+
+    public void setTeamPort(Integer teamPort) {
+        this.teamPort = teamPort;
+    }
+
     @Override
     public String toString() {
         String result="Overcovert{";
-        result+="teamIP=" + teamIP + ", serviceIP=" + serviceIP+"\n";
+        result+="teamport: "+teamPort+"\n";
         result+= "handshake:\n";
-        for(PcapPacket packet : handshakes) {
-            result+=packet+"\n";
+        for(Map.Entry<Handshakes, PcapPacket> entry : handshakes.entrySet()) {
+            result+=entry.getKey().name()+":\n";
+            result+=entry.getValue()+"\n";
         }
         result+="Inbetween:\n";
-        for(PcapPacket packet : inbetween) {
-            result+=packet+"\n";
+        for(Map.Entry<OvercovertPart, List<PcapPacket>> entry : inbetween.entrySet()) {
+            result+=entry.getKey().name()+":\n";
+            result+=entry.getValue()+"\n";
         }
         result+="Reset-packet:\n";
         result+=reset+"}";

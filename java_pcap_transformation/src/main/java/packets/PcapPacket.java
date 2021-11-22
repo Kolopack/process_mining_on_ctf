@@ -102,6 +102,14 @@ public class PcapPacket implements Serializable {
         return tcpPayload;
     }
 
+    public int getPortSender() {
+        return portSender;
+    }
+
+    public int getPortReceiver() {
+        return portReceiver;
+    }
+
     @Override
     public String toString() {
         return "PcapPacket{" +

@@ -3,11 +3,9 @@ package converters;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.TCPPacket;
 import packets.PcapPacket;
-import packets.TcpPacket;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.HashMap;

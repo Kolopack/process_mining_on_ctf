@@ -19,15 +19,10 @@ public class OvercovertEventCreator {
         return result;
     }
 
-    private static boolean isFullReset(PcapPacket packet) {
+    public static boolean isFullReset(PcapPacket packet) {
         if(packet.getTcpFlags().get("RST") && packet.getTcpFlags().get("ACK")) {
             return true;
         }
         return false;
-    }
-
-    private static List<PcapPacket> getOvercovertInbetween(List<PcapPacket> handshakes, List<PcapPacket> resets,
-                                                           List<PcapPacket> allPackets, InetAddress team, InetAddress service) {
-
     }
 }
