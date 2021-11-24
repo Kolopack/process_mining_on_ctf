@@ -1,5 +1,6 @@
 package serviceRepresentation;
 
+import enumerations.Finishes;
 import enumerations.Handshakes;
 import enumerations.OvercovertPart;
 import packets.PcapPacket;
@@ -14,6 +15,7 @@ public class Overcovert {
     private Integer teamPort;
     private HashMap<Handshakes,PcapPacket> handshakes;
     private HashMap<OvercovertPart,List<PcapPacket>> inbetween;
+    private HashMap<Finishes, PcapPacket> finishes;
     private PcapPacket reset;
 
     public Overcovert(Integer teamPort) {
@@ -62,6 +64,14 @@ public class Overcovert {
 
     public void setTeamPort(Integer teamPort) {
         this.teamPort = teamPort;
+    }
+
+    public HashMap<Finishes,PcapPacket> getFinishes() {
+        return finishes;
+    }
+
+    public void setFinishes(HashMap<Finishes,PcapPacket> finishes) {
+        this.finishes = finishes;
     }
 
     @Override

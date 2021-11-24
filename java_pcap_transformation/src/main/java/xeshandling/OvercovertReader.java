@@ -1,8 +1,10 @@
 package xeshandling;
 
+import enumerations.Finishes;
 import enumerations.Handshakes;
 import enumerations.OvercovertPart;
 import packets.PcapPacket;
+import scanning.Network;
 import serviceRepresentation.Overcovert;
 
 import java.net.InetAddress;
@@ -37,6 +39,8 @@ public class OvercovertReader {
                 }
 
                 HashMap<Handshakes, PcapPacket> handshakes= overcovert.getHandshakes();
+                HashMap<Finishes, PcapPacket> finishes=overcovert.getFinishes();
+
                 if (handshakes.get(Handshakes.FIRST) == null && isSYNpacket(current)) {
                     handshakes.put(Handshakes.FIRST,current);
                     overcovert.setHandshakes(handshakes);
@@ -50,34 +54,40 @@ public class OvercovertReader {
                     continue;
                 }
                 if (handshakes.get(Handshakes.SECOND) != null && handshakes.get(Handshakes.THIRD) == null &&
-                        isThirdPacketHandshake(current, client)) {
-                    thirdHandshake = current;
+                        isThirdPacketHandshake(current, team)) {
+                    handshakes.put(Handshakes.THIRD,current);
+                    overcovert.setHandshakes(handshakes);
                     continue;
                 }
-                if(reset==null && OvercovertEventCreator.isFullReset(current)) {
-                    reset=current;
+                if(overcovert.getReset()==null && OvercovertEventCreator.isFullReset(current)) {
+                    overcovert.setReset(current);
                     continue;
                 }
-
-                if (firstFinish == null && isFirstFinishPacket(current) && isAlreadyHandshake()) {
-                    firstFinish = current;
+                if (finishes.get(Finishes.FIRST) == null && isFirstFinishPacket(current) && isAlreadyHandshake()) {
+                    finishes.put(Finishes.FIRST,current);
+                    overcovert.setFinishes(finishes);
                     continue;
                 }
-                if (firstFinish != null && secondFinish == null && isSecondFinishPacket(current)) {
-                    secondFinish = current;
+                if (finishes.get(Finishes.FIRST) != null && finishes.get(Finishes.SECOND) == null && isSecondFinishPacket(current)) {
+                    finishes.put(Finishes.SECOND,current);
+                    overcovert.setFinishes(finishes);
                     continue;
                 }
-                if (secondFinish != null && thirdFinish == null && isThirdFinishPacket(current)) {
-                    thirdFinish = current;
+                if (finishes.get(Finishes.SECOND) != null && finishes.get(Finishes.THIRD) == null && isThirdFinishPacket(current)) {
+                    finishes.put(Finishes.THIRD,current);
+                    overcovert.setFinishes(finishes);
                     continue;
                 }
-                if(firstFinish==null && isFirstFinishPacket(current)) {
-                    firstFinish=current;
+                if(finishes.get(Finishes.FIRST)==null && isFirstFinishPacket(current)) {
+                    handshakes.put(Handshakes.FIRST,current);
+                    overcovert.setHandshakes(handshakes);
                     continue;
                 }
-                if (firstHandshake != null && secondHandshake != null && thirdHandshake != null &&
+                if (handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null
+                        && handshakes.get(Handshakes.THIRD) != null &&
                         isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
                 ) {
+                    List<PcapPacket> inbetween=overcovert.getInbetween();
                     inbetween.add(current);
                     continue;
                 }
@@ -187,7 +197,7 @@ public class OvercovertReader {
     }
 
     private boolean isThirdPacketHandshake(PcapPacket packet, InetAddress client) {
-        if (packet.getIpSender().equals(client) && packet.getAckNumber() == (secondHandshake.getSeqNumber() + 1)
+        if (Network.isInSameNetwork(packet.getIpSender(), client, ) && packet.getAckNumber() == (secondHandshake.getSeqNumber() + 1)
                 && packet.getSeqNumber() == secondHandshake.getAckNumber()) {
             if (packet.getTcpFlags().get("ACK")) {
                 return true;
