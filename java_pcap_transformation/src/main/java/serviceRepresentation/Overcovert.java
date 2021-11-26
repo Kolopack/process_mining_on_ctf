@@ -14,12 +14,18 @@ public class Overcovert {
     private InetAddress teamIP;
     private Integer teamPort;
     private HashMap<Handshakes,PcapPacket> handshakes;
-    private HashMap<OvercovertPart,List<PcapPacket>> inbetween;
+    private List<PcapPacket> inbetween;
     private HashMap<Finishes, PcapPacket> finishes;
     private PcapPacket reset;
 
+    /**
+     * To indicate if this overcovert is already finished or not (so after handshake and reset are set
+     */
+    private boolean isFinished;
+
     public Overcovert(Integer teamPort) {
         this.teamPort=teamPort;
+        this.isFinished=false;
     }
 
     public HashMap<Handshakes,PcapPacket> getHandshakes() {
@@ -34,11 +40,11 @@ public class Overcovert {
         handshakes.put(type,packet);
     }
 
-    public HashMap<OvercovertPart, List<PcapPacket>> getInbetween() {
+    public List<PcapPacket> getInbetween() {
         return inbetween;
     }
 
-    public void setInbetween(HashMap<OvercovertPart,List<PcapPacket>> inbetween) {
+    public void setInbetween(List<PcapPacket> inbetween) {
         this.inbetween = inbetween;
     }
 
@@ -74,6 +80,14 @@ public class Overcovert {
         this.finishes = finishes;
     }
 
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public void setFinished(boolean finished) {
+        isFinished = finished;
+    }
+
     @Override
     public String toString() {
         String result="Overcovert{";
@@ -84,9 +98,8 @@ public class Overcovert {
             result+=entry.getValue()+"\n";
         }
         result+="Inbetween:\n";
-        for(Map.Entry<OvercovertPart, List<PcapPacket>> entry : inbetween.entrySet()) {
-            result+=entry.getKey().name()+":\n";
-            result+=entry.getValue()+"\n";
+        for(PcapPacket entry : inbetween) {
+            result+=entry+":\n";
         }
         result+="Reset-packet:\n";
         result+=reset+"}";
