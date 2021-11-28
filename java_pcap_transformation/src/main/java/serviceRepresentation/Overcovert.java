@@ -6,6 +6,7 @@ import enumerations.OvercovertPart;
 import packets.PcapPacket;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,9 @@ public class Overcovert {
     private boolean isFinished;
 
     public Overcovert(Integer teamPort) {
+        handshakes=new HashMap<>();
+        inbetween=new ArrayList<>();
+        finishes=new HashMap<>();
         this.teamPort=teamPort;
         this.isFinished=false;
     }

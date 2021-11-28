@@ -30,9 +30,9 @@ public class Main {
             InetAddress mostwantedIp=InetAddress.getByName(ipMostwanted);
             InetAddress overcovertIp=InetAddress.getByName(ipOvercovert);
 
-            reader.importPcap(pcapFilesDirectory);
+            /*reader.importPcap(pcapFilesDirectory);
             reader.readFiles(teamIp, subnetmaskBushwhackers,mostwantedIp);
-            System.out.println("Finished storing - mostwanted");
+            System.out.println("Finished storing - mostwanted");*/
 
             readerOvercovert.importPcap(pcapFilesDirectory);
             readerOvercovert.readFiles(teamIp,subnetmaskBushwhackers,overcovertIp);

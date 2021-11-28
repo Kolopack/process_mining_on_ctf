@@ -16,14 +16,14 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class PcapReader {
     private Logger logger = Logger.getLogger(PcapReader.class.getName());
-    private static final String pcapEnding=".*\\.pcap.*";
+    //private static final String pcapEnding=".*\\.pcap.*";
     //private static final String pcapEnding = "ictf2010.pcap31";
+    private static final String pcapEnding = "ictf2010.pcap65";
 
     private File directoryPath;
     private List<File> fileList;
@@ -100,6 +100,7 @@ public class PcapReader {
                 storingList.add(storing);
             }
             logger.info("File: " + file.getName() + " finished. " + packetCounter + "/" + importantPacket + " total/TCP");
+            logger.info("Found "+result.size()+" packets.");
         }
         createXES();
     }
@@ -163,7 +164,7 @@ public class PcapReader {
 
 
     private void createXES() {
-        IService service= ServiceContext.createServiceClass(serviceName, teamName, ipTeam);
+        IService service= ServiceContext.createServiceClass(serviceName, teamName, ipTeam, ipTeamMask);
         service.createXESwithList(getFullServiceList(), pathToXES);
         logger.info("Created all corresponding XES-files.");
     }

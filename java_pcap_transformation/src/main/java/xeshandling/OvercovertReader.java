@@ -48,6 +48,7 @@ public class OvercovertReader {
                     Overcovert newOvercovert=new Overcovert(port);
                     newOvercovert=checkWhichPacket(newOvercovert,current, team, teamMask, service);
                     currentlyOpen.put(port,newOvercovert);
+                    continue;
                 }
                 else {
                     //Not finished-add packet
@@ -135,7 +136,7 @@ public class OvercovertReader {
             overcovert.setHandshakes(handshakes);
             return overcovert;
         }
-        if (handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null
+        /*if (handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null
                 && handshakes.get(Handshakes.THIRD) != null &&
                 isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
         ) {
@@ -143,8 +144,11 @@ public class OvercovertReader {
             inbetween.add(current);
             overcovert.setInbetween(inbetween);
             return overcovert;
-        }
-        logger.warning("Packet could not be assigned");
+        }*/
+        List<PcapPacket> inbetween=overcovert.getInbetween();
+        inbetween.add(current);
+        overcovert.setInbetween(inbetween);
+        //logger.warning("Packet could not be assigned");
         return overcovert;
     }
 

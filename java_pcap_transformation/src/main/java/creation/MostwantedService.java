@@ -28,8 +28,8 @@ public class MostwantedService extends AbstractXESService implements IService {
         }
     }
 
-    public MostwantedService(String teamName, InetAddress teamIP) {
-        super(MOSTWANTED, teamName, teamIP, MOSTWANTED_IP);
+    public MostwantedService(String teamName, InetAddress teamIP, String teamMask) {
+        super(MOSTWANTED, teamName, teamIP, teamMask, MOSTWANTED_IP);
     }
 
     @Override

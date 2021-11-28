@@ -4,8 +4,10 @@ import exceptions.PacketListIsEmptyException;
 import exceptions.UnavailableException;
 import packets.PcapPacket;
 import packets.Session;
+import serviceRepresentation.Overcovert;
 import xeshandling.DefaultEventCreator;
 import xeshandling.OvercovertEventCreator;
+import xeshandling.OvercovertReader;
 import xeshandling.XESManager;
 
 import java.net.InetAddress;
@@ -25,8 +27,8 @@ public class OvercovertService extends AbstractXESService implements IService{
         }
     }
 
-    public OvercovertService(String teamName, InetAddress teamIP) {
-        super(OVERCOVERT, teamName, teamIP,OVERCOVERT_IP);
+    public OvercovertService(String teamName, InetAddress teamIP, String teamMask) {
+        super(OVERCOVERT, teamName, teamIP, teamMask,OVERCOVERT_IP);
     }
 
     @Override
@@ -48,9 +50,17 @@ public class OvercovertService extends AbstractXESService implements IService{
         }
         XESManager xesManager=new XESManager(xesPath, OVERCOVERT+"_"+getTeamName());
 
-        List<Session> handshakes= DefaultEventCreator.checkForThreeWayHandshake(packetList);
-        List<PcapPacket> resets= OvercovertEventCreator.checkForConnectionResets(packetList);
-        List<PcapPacket> inbeetween;
+        //List<Session> handshakes= DefaultEventCreator.checkForThreeWayHandshake(packetList);
+        //List<PcapPacket> resets= OvercovertEventCreator.checkForConnectionResets(packetList);
+        //List<PcapPacket> inbeetween;
+
+        OvercovertReader overcovertReader=new OvercovertReader();
+        List<Overcovert> overcoverts=overcovertReader.getOvercovert(packetList,getTeamIP(),getTeamMask(),OVERCOVERT_IP);
+
+        System.out.println("Found Overcoverts: "+overcoverts.size());
+        for(Overcovert overcovert : overcoverts) {
+            System.out.println(overcovert+"\n");
+        }
     }
 
 }
