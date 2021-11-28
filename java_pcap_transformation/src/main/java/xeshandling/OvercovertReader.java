@@ -53,29 +53,41 @@ public class OvercovertReader {
                 else {
                     //Not finished-add packet
                     overcovert=checkWhichPacket(overcovert,current, team, teamMask, service);
+                    if(isOvercovertFinished(overcovert)) {
+                        overcovert=makeOvercovertFinished(overcovert);
+                    }
                     currentlyOpen.put(port,overcovert);
                     continue;
                 }
             }
             else {
-                //New Overcovert-connection, create new instance
-                Integer portA=current.getPortReceiver();
-                Integer portB=current.getPortSender();
+                //New Overcovert-connection, create new instance.
+                Integer portReceiver=current.getPortReceiver();
+                Integer portSender=current.getPortSender();
                 Integer port;
                 Overcovert overcovert;
-                if(portA.equals(team)) {
-                    overcovert=new Overcovert(portB);
-                    port=portB;
+                if(current.getIpReceiver().equals(team)) {
+                    overcovert=new Overcovert(portSender);
+                    port=portSender;
+                }
+                else if(current.getIpSender().equals(team)){
+                    overcovert=new Overcovert(portReceiver);
+                    port=portReceiver;
                 }
                 else {
-                    overcovert=new Overcovert(portA);
-                    port=portA;
+                    overcovert=new Overcovert(portSender);
+                    port=portSender;
                 }
                 overcovert=checkWhichPacket(overcovert,current, team, teamMask, service);
                 currentlyOpen.put(port,overcovert);
             }
         }
         return result;
+    }
+
+    private Overcovert makeOvercovertFinished(Overcovert overcovert) {
+        overcovert.setFinished(true);
+        return overcovert;
     }
 
     private boolean isOvercovertFinished(Overcovert overcovert) {
