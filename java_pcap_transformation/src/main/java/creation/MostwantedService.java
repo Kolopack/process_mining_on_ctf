@@ -4,15 +4,14 @@ import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
 import exceptions.UnavailableException;
 import org.w3c.dom.Element;
-import serviceRepresentation.Mostwanted;
 import packets.PcapPacket;
 import packets.Session;
+import serviceRepresentation.Mostwanted;
 import xeshandling.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class MostwantedService extends AbstractXESService implements IService {
@@ -57,9 +56,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         System.out.println("Handshakes-count: " + handshakes.size());
         System.out.println("Finishes-count: " + finishes.size());
 
-        OvercovertReader overcovertReader =new OvercovertReader();
         List<Mostwanted> mostwanteds = MostwantedEventCreator.getPSHACKSessionsBetween(handshakes, finishes, packetList, getTeamIP(), MOSTWANTED_IP);
-        //List<Mostwanted> mostwanteds = mostwantedReader.getOvercovert(packetList,getTeamIP(),MOSTWANTED_IP);
 
         System.out.println("The following Mostwanteds were detected: (" + mostwanteds.size() + ")");
         createMostwantedXES(mostwanteds, manager);
@@ -68,10 +65,10 @@ public class MostwantedService extends AbstractXESService implements IService {
     private void createMostwantedXES(List<Mostwanted> mostwantedList, XESManager xesManager) {
         System.out.println("Nun wird XES gebaut :-)");
 
-        Element serviceName = getServiceNameElement(xesManager);
+        Element serviceName = DefaultEventCreator.getServiceNameElement(xesManager,MOSTWANTED);
         xesManager.addNewElementToLog(serviceName);
 
-        Element teamName = getTeamNameElement(xesManager);
+        Element teamName = DefaultEventCreator.getTeamNameElement(xesManager,getTeamName());
         xesManager.addNewElementToLog(teamName);
 
         for (Mostwanted mostwanted : mostwantedList) {
@@ -82,29 +79,12 @@ public class MostwantedService extends AbstractXESService implements IService {
         xesManager.finishFile();
     }
 
-    private Element getServiceNameElement(XESManager xesManager) {
-        HashMap<String, String> serviceParameters = new HashMap<>();
-        serviceParameters.put(XESConstants.KEY_STRING, "service");
-        serviceParameters.put(XESConstants.VALUE_STRING, MOSTWANTED);
-        Element service = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, serviceParameters);
-        return service;
-    }
-
-    private Element getTeamNameElement(XESManager xesManager) {
-        HashMap<String, String> teamnameParameters = new HashMap<>();
-        teamnameParameters.put(XESConstants.KEY_STRING, "teamname");
-        teamnameParameters.put(XESConstants.VALUE_STRING, getTeamName());
-        Element team = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, teamnameParameters);
-        return team;
-    }
-
     private Element getTraceForMostwanted(Mostwanted mostwanted, XESManager xesManager) {
 
         //Get Event-Element for Three-Way-Handshake
         List<PcapPacket> handshakes = mostwanted.getThreeWayHandshakePackets();
         Element handshakeEvent = ElementCreator.getHandShakeOrFinishEvent(handshakes, xesManager, XESConstants.HANDSHAKE_CONCEPT_NAME);
 
-        //TODO: here have to be things inbetween: PSHACKs and recognizing HTTP-GET f.i.
         List<PcapPacket> pshAckPackets = mostwanted.getPSHACKAttacks();
         ArrayList<Element> pshAckEvents = ElementCreator.getEventsOfPSHACK(pshAckPackets, xesManager);
 
@@ -123,5 +103,4 @@ public class MostwantedService extends AbstractXESService implements IService {
         Element trace = xesManager.createNestedElement(XESConstants.TRACE_ARGUMENT, traceElements);
         return trace;
     }
-
 }

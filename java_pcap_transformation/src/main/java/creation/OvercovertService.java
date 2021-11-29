@@ -1,17 +1,20 @@
 package creation;
 
+import constants.XESConstants;
+import enumerations.Finishes;
+import enumerations.Handshakes;
 import exceptions.PacketListIsEmptyException;
 import exceptions.UnavailableException;
+import org.w3c.dom.Element;
 import packets.PcapPacket;
-import packets.Session;
 import serviceRepresentation.Overcovert;
-import xeshandling.DefaultEventCreator;
-import xeshandling.OvercovertEventCreator;
-import xeshandling.OvercovertReader;
-import xeshandling.XESManager;
+import xeshandling.*;
 
+import javax.swing.plaf.metal.OceanTheme;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class OvercovertService extends AbstractXESService implements IService{
@@ -50,10 +53,6 @@ public class OvercovertService extends AbstractXESService implements IService{
         }
         XESManager xesManager=new XESManager(xesPath, OVERCOVERT+"_"+getTeamName());
 
-        //List<Session> handshakes= DefaultEventCreator.checkForThreeWayHandshake(packetList);
-        //List<PcapPacket> resets= OvercovertEventCreator.checkForConnectionResets(packetList);
-        //List<PcapPacket> inbeetween;
-
         OvercovertReader overcovertReader=new OvercovertReader();
         List<Overcovert> overcoverts=overcovertReader.getOvercovert(packetList,getTeamIP(),getTeamMask(),OVERCOVERT_IP);
 
@@ -61,6 +60,36 @@ public class OvercovertService extends AbstractXESService implements IService{
         for(Overcovert overcovert : overcoverts) {
             System.out.println(overcovert+"\n");
         }
+        createOvercovertXES(overcoverts,xesManager);
     }
 
+    private void createOvercovertXES(List<Overcovert> overcovertList, XESManager xesManager) {
+        System.out.println("Nun wird XES gebaut :-)");
+
+        Element serviceElement=DefaultEventCreator.getServiceNameElement(xesManager,OVERCOVERT);
+        xesManager.addNewElementToLog(serviceElement);
+
+        Element teamElement=DefaultEventCreator.getTeamNameElement(xesManager,getTeamName());
+        xesManager.addNewElementToLog(teamElement);
+    }
+
+    private Element getTraceForOvercovert(Overcovert overcovert, XESManager xesManager) {
+        HashMap<Handshakes, PcapPacket> handshakes=overcovert.getHandshakes();
+
+        List<PcapPacket> handshakeList=new ArrayList<PcapPacket>(overcovert.getHandshakes().values());
+        Element handshakeElement= ElementCreator.getHandShakeOrFinishEvent(handshakeList,xesManager, XESConstants.HANDSHAKE_CONCEPT_NAME);
+
+        List<PcapPacket> pshackList=overcovert.getInbetween();
+        ArrayList<Element> pshackElementList=ElementCreator.getEventsOfPSHACK(pshackList,xesManager);
+
+
+        List<HashMap<Finishes, PcapPacket>> finishesList=overcovert.getFinishes();
+        ArrayList<Element> finishesElements=new ArrayList<>();
+        for(HashMap<Finishes, PcapPacket> element : finishesList) {
+            List<PcapPacket> temp=new ArrayList<PcapPacket>(element.values());
+            Element finishesElement=ElementCreator.getHandShakeOrFinishEvent(temp,xesManager,XESConstants.FINISHING_CONCEPT_NAME);
+            finishesElements.add(finishesElement);
+        }
+
+    }
 }

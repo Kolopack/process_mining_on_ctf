@@ -55,6 +55,7 @@ public class OvercovertReader {
                     overcovert=checkWhichPacket(overcovert,current, team, teamMask, service);
                     if(isOvercovertFinished(overcovert)) {
                         overcovert=makeOvercovertFinished(overcovert);
+                        result.add(overcovert);
                     }
                     currentlyOpen.put(port,overcovert);
                     continue;
@@ -99,11 +100,18 @@ public class OvercovertReader {
         return false;
     }
 
+    private boolean isFinishFinished(HashMap<Finishes, PcapPacket> finish) {
+        if(finish.get(Finishes.FIRST)!=null && finish.get(Finishes.SECOND)!=null && finish.get(Finishes.THIRD)!=null) {
+            return true;
+        }
+        return false;
+    }
+
     private Overcovert checkWhichPacket(Overcovert overcovert, PcapPacket current,
                                         InetAddress team, String teamMask, InetAddress service) {
 
         HashMap<Handshakes, PcapPacket> handshakes= overcovert.getHandshakes();
-        HashMap<Finishes, PcapPacket> finishes=overcovert.getFinishes();
+        HashMap<Finishes, PcapPacket> finishes=overcovert.getLastfinishes();
 
         if (handshakes.get(Handshakes.FIRST) == null && isSYNpacket(current)) {
             handshakes.put(Handshakes.FIRST,current);
@@ -128,19 +136,19 @@ public class OvercovertReader {
         }
         if (finishes.get(Finishes.FIRST) == null && isFirstFinishPacket(current) && isAlreadyHandshake(handshakes)) {
             finishes.put(Finishes.FIRST,current);
-            overcovert.setFinishes(finishes);
+            overcovert.setLastfinishes(finishes);
             return overcovert;
         }
         if (finishes.get(Finishes.FIRST) != null && finishes.get(Finishes.SECOND) == null
                 && isSecondFinishPacket(current, finishes)) {
             finishes.put(Finishes.SECOND,current);
-            overcovert.setFinishes(finishes);
+            overcovert.setLastfinishes(finishes);
             return overcovert;
         }
         if (finishes.get(Finishes.SECOND) != null && finishes.get(Finishes.THIRD) == null &&
                 isThirdFinishPacket(current, finishes)) {
             finishes.put(Finishes.THIRD,current);
-            overcovert.setFinishes(finishes);
+            overcovert.setLastfinishes(finishes);
             return overcovert;
         }
         if(finishes.get(Finishes.FIRST)==null && isFirstFinishPacket(current)) {
@@ -148,15 +156,11 @@ public class OvercovertReader {
             overcovert.setHandshakes(handshakes);
             return overcovert;
         }
-        /*if (handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null
-                && handshakes.get(Handshakes.THIRD) != null &&
-                isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
-        ) {
-            List<PcapPacket> inbetween=overcovert.getInbetween();
-            inbetween.add(current);
-            overcovert.setInbetween(inbetween);
-            return overcovert;
-        }*/
+        if(isFinishFinished(finishes)) {
+            List<HashMap<Finishes,PcapPacket>> finishList=overcovert.getFinishes();
+            finishList.add(finishes);
+            overcovert.setFinishes(finishList);
+        }
         List<PcapPacket> inbetween=overcovert.getInbetween();
         inbetween.add(current);
         overcovert.setInbetween(inbetween);

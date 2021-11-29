@@ -1,6 +1,8 @@
 package xeshandling;
 
+import constants.XESConstants;
 import javafx.util.Pair;
+import org.w3c.dom.Element;
 import packets.PcapPacket;
 import packets.Session;
 
@@ -191,5 +193,20 @@ public class DefaultEventCreator {
         return false;
     }
 
+    public static Element getServiceNameElement(XESManager xesManager, String serviceName) {
+        HashMap<String, String> serviceParameters = new HashMap<>();
+        serviceParameters.put(XESConstants.KEY_STRING, "service");
+        serviceParameters.put(XESConstants.VALUE_STRING, serviceName);
+        Element service = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, serviceParameters);
+        return service;
+    }
+
+    public static Element getTeamNameElement(XESManager xesManager, String teamName) {
+        HashMap<String, String> teamnameParameters = new HashMap<>();
+        teamnameParameters.put(XESConstants.KEY_STRING, "teamname");
+        teamnameParameters.put(XESConstants.VALUE_STRING, teamName);
+        Element team = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, teamnameParameters);
+        return team;
+    }
 }
 

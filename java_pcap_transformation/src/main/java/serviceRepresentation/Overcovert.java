@@ -2,7 +2,6 @@ package serviceRepresentation;
 
 import enumerations.Finishes;
 import enumerations.Handshakes;
-import enumerations.OvercovertPart;
 import packets.PcapPacket;
 
 import java.net.InetAddress;
@@ -16,7 +15,8 @@ public class Overcovert {
     private Integer teamPort;
     private HashMap<Handshakes,PcapPacket> handshakes;
     private List<PcapPacket> inbetween;
-    private HashMap<Finishes, PcapPacket> finishes;
+    private List<HashMap<Finishes, PcapPacket>> finishes;
+    private HashMap<Finishes, PcapPacket> lastfinishes;
     private PcapPacket reset;
 
     /**
@@ -27,7 +27,8 @@ public class Overcovert {
     public Overcovert(Integer teamPort) {
         handshakes=new HashMap<>();
         inbetween=new ArrayList<>();
-        finishes=new HashMap<>();
+        lastfinishes =new HashMap<>();
+        finishes=new ArrayList<>();
         this.teamPort=teamPort;
         this.isFinished=false;
     }
@@ -76,12 +77,12 @@ public class Overcovert {
         this.teamPort = teamPort;
     }
 
-    public HashMap<Finishes,PcapPacket> getFinishes() {
-        return finishes;
+    public HashMap<Finishes,PcapPacket> getLastfinishes() {
+        return lastfinishes;
     }
 
-    public void setFinishes(HashMap<Finishes,PcapPacket> finishes) {
-        this.finishes = finishes;
+    public void setLastfinishes(HashMap<Finishes,PcapPacket> lastfinishes) {
+        this.lastfinishes = lastfinishes;
     }
 
     public boolean isFinished() {
@@ -90,6 +91,18 @@ public class Overcovert {
 
     public void setFinished(boolean finished) {
         isFinished = finished;
+    }
+
+    public List<HashMap<Finishes, PcapPacket>> getFinishes() {
+        return finishes;
+    }
+
+    public void setFinishes(List<HashMap<Finishes, PcapPacket>> finishes) {
+        this.finishes = finishes;
+    }
+
+    public void addFinish(HashMap<Finishes,PcapPacket> finish) {
+        finishes.add(finish);
     }
 
     @Override
