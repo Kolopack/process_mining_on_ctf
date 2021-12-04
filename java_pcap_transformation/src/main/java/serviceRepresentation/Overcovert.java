@@ -13,6 +13,8 @@ import java.util.Map;
 public class Overcovert {
     private InetAddress teamIP;
     private Integer teamPort;
+    private InetAddress serviceIP;
+    private  Integer servicePort;
     private HashMap<Handshakes,PcapPacket> handshakes;
     private List<PcapPacket> inbetween;
     private List<HashMap<Finishes, PcapPacket>> finishes;
@@ -103,6 +105,22 @@ public class Overcovert {
 
     public void addFinish(HashMap<Finishes,PcapPacket> finish) {
         finishes.add(finish);
+    }
+
+    public InetAddress getServiceIP() {
+        return serviceIP;
+    }
+
+    public void setServiceIP(InetAddress serviceIP) {
+        this.serviceIP = serviceIP;
+    }
+
+    public Integer getServicePort() {
+        return servicePort;
+    }
+
+    public void setServicePort(Integer servicePort) {
+        this.servicePort = servicePort;
     }
 
     @Override

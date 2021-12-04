@@ -74,11 +74,15 @@ public class OvercovertReader {
                 else if(current.getIpSender().equals(team)){
                     overcovert=new Overcovert(portReceiver);
                     port=portReceiver;
+                    overcovert.setServicePort(portSender);
                 }
                 else {
                     overcovert=new Overcovert(portSender);
                     port=portSender;
+                    overcovert.setServicePort(portReceiver);
                 }
+                overcovert.setServiceIP(service);
+                overcovert.setTeamIP(team);
                 overcovert=checkWhichPacket(overcovert,current, team, teamMask, service);
                 currentlyOpen.put(port,overcovert);
             }

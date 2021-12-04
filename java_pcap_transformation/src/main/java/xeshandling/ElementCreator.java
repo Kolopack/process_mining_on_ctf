@@ -284,4 +284,23 @@ public class ElementCreator {
         Element result = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
         return result;
     }
+
+    public static Element getResetElement(PcapPacket packet, XESManager xesManager) {
+        HashMap<String, String> conceptArguments = new HashMap<>();
+        conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        conceptArguments.put(XESConstants.VALUE_STRING, "Closed by Reset-Flag");
+        Element conceptName = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptArguments);
+
+        Element sender=getRequesterOrInitiator(packet,xesManager,XESConstants.SENDER_STRING);
+
+        Element timestamp=getDateElement(packet,xesManager);
+
+        ArrayList<Element> elements=new ArrayList<>();
+        elements.add(conceptName);
+        elements.add(sender);
+        elements.add(timestamp);
+
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+        return result;
+    }
 }

@@ -19,4 +19,6 @@ public class XESConstants {
 
     public static final String HANDSHAKE_CONCEPT_NAME="Established handshake";
     public static final String FINISHING_CONCEPT_NAME="Finish connection";
+
+    public static final String OVERCOVERT_TRACE_NAME="Attacking the overcovert service";
 }

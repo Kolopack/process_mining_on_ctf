@@ -1,4 +1,3 @@
-import packets.PcapPacket;
 import scanning.PcapReader;
 
 import java.net.InetAddress;
