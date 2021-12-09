@@ -32,8 +32,6 @@ public class MostwantedEventCreator {
 
             List<PcapPacket> handshakePackets = handshakes.get(i).getPackets();
             Integer indexFirstPacketHandshake = handshakes.get(i).getCertainIndex();
-            PcapPacket lastPacketHandshake = handshakePackets.get(handshakePackets.size() - 1);
-            Timestamp timestampHandshake = lastPacketHandshake.getArrivalTime();
 
             List<PcapPacket> finishesPackets = finishes.get(i);
             PcapPacket firstPacketFinishes = finishes.get(i).get(0);

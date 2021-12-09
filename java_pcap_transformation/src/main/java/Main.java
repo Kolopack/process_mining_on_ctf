@@ -20,22 +20,32 @@ public class Main {
     private static final String ipOvercovert="10.14.1.10";
     private static final String overcovertName="Overcovert";
 
+    //Service Flagsubmission
+    private static final  String ipFlagsubmission="10.16.13.37";
+    private static final  String flagsubmissionName="Flagsubmission";
+
     public static void main(String[] args) {
         PcapReader reader=new PcapReader(teamName, mostwantedName, pathToXES);
         PcapReader readerOvercovert=new PcapReader(teamName,overcovertName,pathToXES);
+        PcapReader readerFlagsubmission=new PcapReader(teamName,flagsubmissionName,pathToXES);
 
         try{
             InetAddress teamIp=InetAddress.getByName(ipBushwhackers);
             InetAddress mostwantedIp=InetAddress.getByName(ipMostwanted);
             InetAddress overcovertIp=InetAddress.getByName(ipOvercovert);
+            InetAddress flagsubmissionIp=InetAddress.getByName(ipFlagsubmission);
 
             /*reader.importPcap(pcapFilesDirectory);
             reader.readFiles(teamIp, subnetmaskBushwhackers,mostwantedIp);
             System.out.println("Finished storing - mostwanted");*/
 
-            readerOvercovert.importPcap(pcapFilesDirectory);
+            /*readerOvercovert.importPcap(pcapFilesDirectory);
             readerOvercovert.readFiles(teamIp,subnetmaskBushwhackers,overcovertIp);
-            System.out.println("Finished storing - overcovert");
+            System.out.println("Finished storing - overcovert");*/
+
+            readerFlagsubmission.importPcap(pcapFilesDirectory);
+            readerFlagsubmission.readFiles(teamIp,subnetmaskBushwhackers,flagsubmissionIp);
+            System.out.println("Finished storing - flagsubmission");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
