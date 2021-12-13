@@ -86,7 +86,7 @@ public class ElementCreator {
         return result;
     }
 
-    private static boolean isHTTPRequesting(String payload) {
+    public static boolean isHTTPRequesting(String payload) {
         if (payload == null) {
             return false;
         }
@@ -97,7 +97,14 @@ public class ElementCreator {
         return false;
     }
 
-    private static Element getHTTPEventElement(PcapPacket packet, XESManager xesManager) {
+    public static Element getHTTPEventElement(PcapPacket packet, XESManager xesManager) {
+        String httpMethod = getHTTPMethod(packet.getTcpPayload());
+        if (httpMethod == null) {
+            return null;
+        }
+        if(httpMethod.equals(HTTPConstants.POST)) {
+            return getPostSubmitEvent(httpMethod,packet,xesManager);
+        }
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
         conceptArguments.put(XESConstants.VALUE_STRING, "HTTP-Request");
@@ -105,10 +112,7 @@ public class ElementCreator {
 
         HashMap<String, String> methodArguments = new HashMap<>();
         methodArguments.put(XESConstants.KEY_STRING, "HTTP-method");
-        String httpMethod = getHTTPMethod(packet.getTcpPayload());
-        if (httpMethod == null) {
-            throw new NoMethodFoundException();
-        }
+
         methodArguments.put(XESConstants.VALUE_STRING, httpMethod);
         Element httpMethodElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, methodArguments);
 
@@ -129,6 +133,38 @@ public class ElementCreator {
         elements.add(date);
 
         Element result = xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+        return result;
+    }
+
+    private static Element getPostSubmitEvent(String httpMethod,PcapPacket packet, XESManager xesManager) {
+        HashMap<String, String> conceptArguments = new HashMap<>();
+        conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        conceptArguments.put(XESConstants.VALUE_STRING, "Submit flag");
+        Element conceptName= xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptArguments);
+
+        HashMap<String, String> methodArguments=new HashMap<>();
+        methodArguments.put(XESConstants.VALUE_STRING, httpMethod);
+        Element httpMethodElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, methodArguments);
+
+        HashMap<String, String> postURIArguments=new HashMap<>();
+        postURIArguments.put(XESConstants.KEY_STRING, "fullURI");
+        postURIArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
+        Element uriElement= xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, postURIArguments);
+
+        Element requestor=getRequesterOrInitiator(packet,xesManager,XESConstants.REQUESTER_STRING);
+
+        //TODO: flagstring
+        System.out.println("Here read out flagstring");
+
+        Element dateElement=getDateElement(packet,xesManager);
+
+        ArrayList<Element> elements=new ArrayList<>();
+        elements.add(conceptName);
+        elements.add(httpMethodElement);
+        elements.add(uriElement);
+        elements.add(requestor);
+        elements.add(dateElement);
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
         return result;
     }
 

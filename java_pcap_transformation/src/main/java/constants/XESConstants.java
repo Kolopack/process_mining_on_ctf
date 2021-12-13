@@ -7,6 +7,7 @@ public class XESConstants {
     public static final String INITIATOR_STRING="initiator";
     public static final String SENDER_STRING="sender";
     public static final String RECEIVER_STRING="receiver";
+    public static final String REQUESTER_STRING="requester";
     public static final String ACKRETURNED_STRING="ACK returned";
 
     public static final String TIME_NAME ="time:timestamp";

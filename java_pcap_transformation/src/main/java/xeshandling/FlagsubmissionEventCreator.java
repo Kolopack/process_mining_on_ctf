@@ -1,6 +1,8 @@
 package xeshandling;
 
+import constants.XESConstants;
 import enumerations.MostwantedPart;
+import org.w3c.dom.Element;
 import packets.PcapPacket;
 import packets.Session;
 import serviceRepresentation.Flagsubmission;
@@ -45,6 +47,20 @@ public class FlagsubmissionEventCreator {
                 result.add(flagsubmission);
             }
         }
+        return result;
+    }
+
+    private Element getFlagSubmittingElement(XESManager xesManager) {
+        Element conceptName=getConceptName(xesManager);
+        return null;
+    }
+
+    private Element getConceptName(XESManager xesManager) {
+        HashMap<String, String> conceptArguments=new HashMap<>();
+        conceptArguments.put(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
+        conceptArguments.put(XESConstants.VALUE_STRING, "Submit flag");
+
+        Element result=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptArguments);
         return result;
     }
 }

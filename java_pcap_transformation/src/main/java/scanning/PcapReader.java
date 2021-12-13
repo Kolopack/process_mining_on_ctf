@@ -24,7 +24,8 @@ public class PcapReader {
     //private static final String pcapEnding=".*\\.pcap.*";
     //private static final String pcapEnding = "ictf2010.pcap31";
     //private static final String pcapEnding = "ictf2010.pcap65";
-    private static final String pcapEnding="ictf2010.pcap";
+    //private static final String pcapEnding="ictf2010.pcap";
+    private static final String pcapEnding="ictf2010.pcap48";
 
     private File directoryPath;
     private List<File> fileList;
