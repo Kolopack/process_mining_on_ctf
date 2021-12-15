@@ -133,6 +133,12 @@ public class PcapReader {
                                 if(tcpPacket==null) {
                                     System.out.println("But TCP-Packet is null.");
                                 }
+                                System.out.println("One of them, here are the packets:");
+                                System.out.println("IP-packet: ");
+                                System.out.println(ipPacket.getPayload());
+                                System.out.println("TCP-Packet: ");
+                                System.out.println(tcpPacket.getPayload());
+                                System.out.println("");
                                 PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
                                 packets.add(myPacket);
 

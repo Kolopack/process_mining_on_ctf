@@ -102,9 +102,9 @@ public class ElementCreator {
         if (httpMethod == null) {
             return null;
         }
-        if(httpMethod.equals(HTTPConstants.POST)) {
+        /*if(httpMethod.equals(HTTPConstants.POST)) {
             return getPostSubmitEvent(httpMethod,packet,xesManager);
-        }
+        }*/
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
         conceptArguments.put(XESConstants.VALUE_STRING, "HTTP-Request");
@@ -233,7 +233,6 @@ public class ElementCreator {
         if (result != null) {
             return result;
         }
-
         result = simplyCheckContaining(payload);
         if (result != null) {
             return result;

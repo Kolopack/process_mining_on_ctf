@@ -11,8 +11,17 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Optional;
 
+/**
+ * Class used for converting the packet-classes of io.pkts to internal class-representation (PcapPacket)
+ */
 public class PacketConverter {
-
+    /**
+     * Method which converts the IPPacket and TCPPacket-objects out of io.pkts-package to the internal
+     * representation (Pcappacket)
+     * @param ipPacket Object of io.pkts.packet public interface IPPacket
+     * @param tcpPacket Object of io.pkts.packet public interface TCPPacket
+     * @return Object of PcapPacket (internal)
+     */
     public static PcapPacket convertPacket(IPPacket ipPacket, TCPPacket tcpPacket) {
         int identification=ipPacket.getIdentification();
 
@@ -61,6 +70,13 @@ public class PacketConverter {
         return result;
     }
 
+    /**
+     * Method for converting the flags set inside of the io.pkts-TCPPacket-object into the representation of
+     * PcapPacket (internal)
+     * @param tcpPacket Object of io.pkts.packet public interface TCPPacket
+     * @return Hashmap of String (flag-string) and Boolean (if set true or false),
+     * which is the way of storing TCP-flags inside of our PcapPacket-class
+     */
     private static HashMap<String, Boolean> getFlagMap(TCPPacket tcpPacket){
         HashMap<String, Boolean> result=new HashMap<>();
 
