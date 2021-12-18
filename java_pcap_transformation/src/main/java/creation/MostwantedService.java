@@ -14,9 +14,21 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service-class containing the methods and logic for creating the XES for the Mostwanted-service
+ */
 public class MostwantedService extends AbstractXESService implements IService {
+    /**
+     * Name of the Mostwanted-service as string, for setting the file-name of XES
+     */
     private static final String MOSTWANTED = "Mostwanted";
+    /**
+     * The IP-address of the Service, for setting up the InetAddress-Object
+     */
     private static final String MOSTWANTED_IP_STRING = "10.14.1.9";
+    /**
+     * The IP-address of the Service as java.net.InetAddress-field
+     */
     private static InetAddress MOSTWANTED_IP;
 
     static {
@@ -27,10 +39,21 @@ public class MostwantedService extends AbstractXESService implements IService {
         }
     }
 
+    /**
+     * Constructor for the MostwantedService, as indicated in the abstract class (AbstractXESService)
+     * @param teamName Name of the team as String
+     * @param teamIP IP-address of the team as java.net.InetAddress
+     * @param teamMask Subnet-mask of the team-network as a String in format (f.i. 255.255.0.0)
+     */
     public MostwantedService(String teamName, InetAddress teamIP, String teamMask) {
         super(MOSTWANTED, teamName, teamIP, teamMask, MOSTWANTED_IP);
     }
 
+    /**
+     * Overridden method of the implemented interface, for creating a XES-file with given List of PcapPackets
+     * @param packetList List<PcapPacket> containing the PcapPackets
+     * @param xesPath The path to the XES-file to be created as a String
+     */
     @Override
     public void createXESwithList(List<PcapPacket> packetList, String xesPath) {
         if (packetList.isEmpty()) {
@@ -62,6 +85,11 @@ public class MostwantedService extends AbstractXESService implements IService {
         createMostwantedXES(mostwanteds, manager);
     }
 
+    /**
+     * Creates the XES setting up all the Mostwanted-traces and tag-attributes
+     * @param mostwantedList List of Mostwanted-objects found
+     * @param xesManager Instance of XESManager, to create Java DOM-elements
+     */
     private void createMostwantedXES(List<Mostwanted> mostwantedList, XESManager xesManager) {
         System.out.println("Nun wird XES gebaut :-)");
 
@@ -79,6 +107,12 @@ public class MostwantedService extends AbstractXESService implements IService {
         xesManager.finishFile();
     }
 
+    /**
+     * Sets up and delivers the Trace-DOM-object for a given Mostwanted-object
+     * @param mostwanted Object of Mostwanted
+     * @param xesManager Instance of XESManager
+     * @return Trace for one Mostwanted, as Java-DOM-Element
+     */
     private Element getTraceForMostwanted(Mostwanted mostwanted, XESManager xesManager) {
 
         //Get Event-Element for Three-Way-Handshake

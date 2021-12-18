@@ -39,6 +39,15 @@ public abstract class AbstractXESService {
      */
     protected List<PcapPacket> packetList;
 
+    /**
+     * Constructor for creating AbstractXESService, and so dealing with all forms of implemented Services, as they are all
+     * extending from this abstract class.
+     * @param serviceName Name of the service as String
+     * @param teamName Name of the team as String
+     * @param teamIP IP-address of the team as java.net.InetAddress-object
+     * @param teamMask Subnetmask of the team as String (in format f.i. 255.0.0.0)
+     * @param serviceIP IP-address of the service as java.net.InetAddress-object
+     */
     public AbstractXESService(String serviceName, String teamName, InetAddress teamIP, String teamMask, InetAddress serviceIP) {
         SERVICE_NAME=serviceName;
         this.teamName=teamName;
@@ -47,14 +56,27 @@ public abstract class AbstractXESService {
         this.teamMask=teamMask;
     }
 
+    /**
+     * Gets the teamname
+     * @return teamname as String
+     */
     public String getTeamName() {
         return teamName;
     }
 
+    /**
+     * Gets the ip-address of the team
+     * @return ip-address of the team as java.net.InetAddress
+     */
     public InetAddress getTeamIP() {
         return teamIP;
     }
 
+    /**
+     * Method for checking if the order of the packets inside of the List<PcapPacket> is correct, based on the
+     * arrivaltimes of the contained packets
+     * @return boolean whether they are in correct timely order or not
+     */
     protected boolean isOrderOfPacketsTrue() {
         boolean result=true;
 
@@ -68,6 +90,10 @@ public abstract class AbstractXESService {
         return result;
     }
 
+    /**
+     * Gets the subnet-mask of the team
+     * @return the subnet-mask of the team as a string in the format (f.i. 255.255.0.0)
+     */
     public String getTeamMask() {
         return teamMask;
     }

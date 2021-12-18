@@ -1,9 +1,9 @@
 package exceptions;
 
-public class UnavailableException extends Exception{
+public class TimestampsNotFittingException extends Exception{
     private static final String errorMessage="The finish is not after the connection-establishing";
 
-    public UnavailableException() {
+    public TimestampsNotFittingException() {
         super(errorMessage);
     }
 }
