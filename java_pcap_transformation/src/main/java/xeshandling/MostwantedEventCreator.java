@@ -44,7 +44,7 @@ public class MostwantedEventCreator {
                 if (!(current.getArrivalTime().before(timestampFinish))) {
                     break;
                 }
-                if (DefaultEventCreator.isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
+                if (DefaultEventCreator.isPSHOrACKFlagSet(current.getTcpFlags(), current.getIPPayload(), current.getTcpPayload())
                         && !alreadyStored.contains(current)) {
                     pshAttacks.add(current);
                     alreadyStored.add(current);

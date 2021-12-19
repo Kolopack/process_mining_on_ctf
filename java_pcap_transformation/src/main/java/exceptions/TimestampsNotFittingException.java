@@ -2,14 +2,18 @@ package exceptions;
 
 /**
  * The type Timestamps not fitting exception.
+ * Is thrown when the connection-establishing is not before a finishing
  */
-public class UnavailableException extends RuntimeException{
-    private static final String errorMessage="The service you entered is not supported by this tool. Please check the spelling.";
+public class TimestampsNotFittingException extends Exception{
+    /**
+     * Static error message
+     */
+    private static final String errorMessage="The finish is not after the connection-establishing";
 
     /**
-     * Instantiates a new Timestamps not fitting exception.
+     * Instantiates a new Timestamps-not-fitting exception, using the static error-message
      */
-    public UnavailableException() {
+    public TimestampsNotFittingException() {
         super(errorMessage);
     }
 }

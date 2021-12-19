@@ -5,6 +5,9 @@ package exceptions;
  * which method (GET, POST,..)
  */
 public class NoMethodFoundException extends RuntimeException{
+    /**
+     * Static error-message
+     */
     private static final String errorMessage="Although made as HTTP-request, no HTTP-request-method was extractable.";
 
     /**

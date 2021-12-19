@@ -211,7 +211,7 @@ public class OvercovertReader {
     }
 
     private boolean isFirstFinishPacket(PcapPacket packet) {
-        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getiPPayload(),packet.getTcpPayload())) {
+        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getIPPayload(),packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -221,7 +221,7 @@ public class OvercovertReader {
         PcapPacket firstFinish= finishes.get(Finishes.FIRST);
         if (packet.getIpSender().equals(firstFinish.getIpReceiver()) && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (firstFinish.getSeqNumber() + 1)
-                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -231,7 +231,7 @@ public class OvercovertReader {
         if (packet.getIpSender().equals(finishes.get(Finishes.FIRST).getIpSender())
                 && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (finishes.get(Finishes.SECOND).getSeqNumber() + 1)
-                && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;

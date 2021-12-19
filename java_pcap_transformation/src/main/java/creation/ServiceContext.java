@@ -1,6 +1,6 @@
 package creation;
 
-import exceptions.TimestampsNotFittingException;
+import exceptions.UnavailableException;
 
 import java.net.InetAddress;
 
@@ -8,8 +8,17 @@ import java.net.InetAddress;
  * The type Service context.
  */
 public class ServiceContext {
+    /**
+     * String of name of Mostwanted-Service, for checking
+     */
     private static final String MOSTWANTED="Mostwanted";
+    /**
+     * String of name of Overcovert-Service, for checking
+     */
     private static final String OVERCOVERT="Overcovert";
+    /**
+     * String of name of Flagsubmission-Service, for checking
+     */
     private static final String FLAGSUBMISSION="Flagsubmission";
 
     /**
@@ -37,6 +46,6 @@ public class ServiceContext {
             result=new FlagsubmissionService(teamName,teamIP,teamMask);
             return result;
         }
-        throw new TimestampsNotFittingException();
+        throw new UnavailableException();
     }
 }

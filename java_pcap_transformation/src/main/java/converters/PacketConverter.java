@@ -49,10 +49,10 @@ public class PacketConverter {
 
         Optional<byte[]> ipPayload= Optional.of(ipPacket.getPayload().getArray());
         if(ipPayload.isPresent()) {
-            result.setiPPayload(new String(ipPayload.get(), StandardCharsets.UTF_8));
+            result.setIPPayload(new String(ipPayload.get(), StandardCharsets.UTF_8));
         }
         else {
-            result.setiPPayload(null);
+            result.setIPPayload(null);
         }
 
         Optional<TCPPacket> tcpPacketOptional=Optional.of(tcpPacket);

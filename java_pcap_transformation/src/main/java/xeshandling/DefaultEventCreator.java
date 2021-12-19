@@ -99,7 +99,7 @@ public class DefaultEventCreator {
             PcapPacket current = list.get(i);
 
             if (current.getTcpFlags().get("FIN")
-                    && !isHTTPContinuation(current.getiPPayload(), current.getTcpPayload())) {
+                    && !isHTTPContinuation(current.getIPPayload(), current.getTcpPayload())) {
                 List<PcapPacket> finish = new ArrayList<>();
 
                 partnerA = current.getIpSender();
@@ -137,7 +137,7 @@ public class DefaultEventCreator {
         for (PcapPacket packet : list) {
             if (packet.getIpSender().equals(partnerB) && packet.getTcpFlags().get("ACK")
                     && packet.getAckNumber() == (seq + 1) && packet.getSeqNumber() == ack
-                    && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                    && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
                 result = packet.getSeqNumber();
                 resultList.add(new Pair(result, packet));
                 return resultList;
@@ -162,7 +162,7 @@ public class DefaultEventCreator {
         for (PcapPacket packet : list) {
             if (packet.getIpSender().equals(partnerA) && packet.getTcpFlags().get("ACK")
                     && packet.getAckNumber() == (seqB + 1)
-                    && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                    && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
                 result = true;
                 return new Pair(result, packet);
             }

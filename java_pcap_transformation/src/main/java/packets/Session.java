@@ -3,49 +3,76 @@ package packets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Session.
+ * This class is used when a List of Packets, but also an index (for instance of the first found packet)
+ * is required.
+ * For instance this class was used for finding handshakes in the Mostwanted-algorithm
+ */
 public class Session {
+    /**
+     * Integer for storing a specific index which is important in a context.
+     * (For instance used as the index of the first packet of a TCP-handshake, but also suited for other usage).
+     */
     private Integer certainIndex;
+    /**
+     * List of PcapPackets of this Session
+     */
     private List<PcapPacket> packets;
 
+    /**
+     * Instantiates a new Session.
+     */
     public Session() {
         certainIndex =null;
         packets=new ArrayList<>();
     }
 
-    public Session(int certainIndex, int indexLastPacket, List<PcapPacket> packets) {
-        this.certainIndex = certainIndex;
-        this.packets = packets;
-    }
-
+    /**
+     * Gets certain index.
+     *
+     * @return the certain index
+     */
     public int getCertainIndex() {
         return certainIndex;
     }
 
+    /**
+     * Gets packets.
+     *
+     * @return the packets
+     */
     public List<PcapPacket> getPackets() {
         return packets;
     }
 
-    public PcapPacket getPacketByIndex(int index) {
-        return packets.get(index);
-    }
-
+    /**
+     * Sets certain index.
+     *
+     * @param firstPacket the first packet
+     */
     public void setCertainIndex(int firstPacket) {
         this.certainIndex = firstPacket;
     }
 
+    /**
+     * Sets packets.
+     *
+     * @param packets the packets
+     */
     public void setPackets(List<PcapPacket> packets) {
         this.packets = packets;
     }
 
     @Override
     public String toString() {
-        String print= "Session{" +
-                "indexFirstPacket=" + certainIndex + "\n";
-                print+="The packets involved:\n";
+        StringBuilder print= new StringBuilder("Session{" +
+                "indexFirstPacket=" + certainIndex + "\n");
+                print.append("The packets involved:\n");
                 for(PcapPacket  packet : packets) {
-                    print+= packet+"\n";
+                    print.append(packet).append("\n");
                 }
-                print+="};";
-        return print;
+                print.append("};");
+        return print.toString();
     }
 }

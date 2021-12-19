@@ -5,11 +5,11 @@ import java.net.UnknownHostException;
 
 public class Network {
     /**
-     * Method for checking if two InetAdress IpAddresses are in the same network.
+     * Method for checking if two InetAddress IpAddresses are in the same network.
      * CITE: Fundamental idea taken from:
      * https://stackoverflow.com/questions/8555847/test-with-java-if-two-ips-are-in-the-same-network
-     * @param firstAddress
-     * @param secondAddress
+     * @param firstAddress First IP-address in the type java.net.InetAddress
+     * @param secondAddress Second IP-address in the type java.net.InetAddress
      * @return boolean if they are in the same network or not
      */
     public static boolean isInSameNetwork(InetAddress firstAddress, InetAddress secondAddress, String ipTeamMask) {

@@ -5,6 +5,9 @@ package exceptions;
  * inside of the PCAP-files between user-declared team and service
  */
 public class PacketListIsEmptyException extends RuntimeException{
+    /**
+     * Static error message
+     */
     private static final String errorMessage="The List of PcapPackets was empty - internal error.";
 
     /**

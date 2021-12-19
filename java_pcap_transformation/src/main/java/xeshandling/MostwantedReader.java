@@ -80,7 +80,7 @@ public class MostwantedReader {
                 continue;
             }
             if (firstHandshake != null && secondHandshake != null && thirdHandshake != null &&
-                    isPSHOrACKFlagSet(current.getTcpFlags(), current.getiPPayload(), current.getTcpPayload())
+                    isPSHOrACKFlagSet(current.getTcpFlags(), current.getIPPayload(), current.getTcpPayload())
             ) {
                 inbetween.add(current);
                 continue;
@@ -193,7 +193,7 @@ public class MostwantedReader {
     }
 
     private boolean isFirstFinishPacket(PcapPacket packet) {
-        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getiPPayload(),packet.getTcpPayload())) {
+        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getIPPayload(),packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -202,7 +202,7 @@ public class MostwantedReader {
     private boolean isSecondFinishPacket(PcapPacket packet) {
         if (packet.getIpSender().equals(firstFinish.getIpReceiver()) && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (firstFinish.getSeqNumber() + 1)
-                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;
@@ -211,7 +211,7 @@ public class MostwantedReader {
     private boolean isThirdFinishPacket(PcapPacket packet) {
         if (packet.getIpSender().equals(firstFinish.getIpSender()) && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (secondFinish.getSeqNumber() + 1)
-                && !isHTTPContinuation(packet.getiPPayload(), packet.getTcpPayload())) {
+                && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
             return true;
         }
         return false;

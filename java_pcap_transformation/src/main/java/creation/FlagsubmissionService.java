@@ -2,6 +2,7 @@ package creation;
 
 import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
+import exceptions.TimestampsNotFittingException;
 import exceptions.UnavailableException;
 import org.w3c.dom.Element;
 import packets.PcapPacket;
@@ -69,9 +70,9 @@ public class FlagsubmissionService extends AbstractXESService implements IServic
             if (isOrderOfPacketsTrue()) {
                 logger.info("Packets are in correct order");
             } else {
-                throw new UnavailableException();
+                throw new TimestampsNotFittingException();
             }
-        } catch (UnavailableException e) {
+        } catch (TimestampsNotFittingException e) {
             e.printStackTrace();
         }
 
