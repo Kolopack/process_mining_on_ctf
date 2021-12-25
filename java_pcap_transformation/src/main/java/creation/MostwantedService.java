@@ -79,7 +79,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         System.out.println("Handshakes-count: " + handshakes.size());
         System.out.println("Finishes-count: " + finishes.size());
 
-        List<Mostwanted> mostwanteds = MostwantedEventCreator.getPSHACKSessionsBetween(handshakes, finishes, packetList, getTeamIP(), MOSTWANTED_IP);
+        List<Mostwanted> mostwanteds = MostwantedEventCreator.getMostwantedInstances(handshakes, finishes, packetList, getTeamIP(), MOSTWANTED_IP);
 
         System.out.println("The following Mostwanteds were detected: (" + mostwanteds.size() + ")");
         createMostwantedXES(mostwanteds, manager);

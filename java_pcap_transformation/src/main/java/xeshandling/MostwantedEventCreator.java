@@ -11,10 +11,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * The type Mostwanted event creator.
+ * Contains methods used for creating DOM-Elements specific to the Mostwanted-service
+ */
 public class MostwantedEventCreator {
 
-    public static List<Mostwanted> getPSHACKSessionsBetween(List<Session> handshakes, List<List<PcapPacket>> finishes, List<PcapPacket> allPackets,
-                                                            InetAddress team, InetAddress service) {
+    /**
+     * Creates and returns Mostwanted-objects
+     *
+     * @param handshakes the handshakes as List<Session>
+     * @param finishes   the finishes as List<List<PcapPacket>>
+     * @param allPackets all PcapPackets (full list)
+     * @param team       the IP-address of the team as java.net.InetAddress
+     * @param service    the IP-address of the service as java.net.InetAddress
+     * @return the list of created Mostwanted-instances
+     */
+    public static List<Mostwanted> getMostwantedInstances(List<Session> handshakes, List<List<PcapPacket>> finishes, List<PcapPacket> allPackets,
+                                                          InetAddress team, InetAddress service) {
         List<Mostwanted> result = new ArrayList<>();
         List<PcapPacket> alreadyStored = new ArrayList<>();
 
@@ -31,7 +45,7 @@ public class MostwantedEventCreator {
             HashMap<MostwantedPart, List<PcapPacket>> mostwantedPackets = new HashMap<>();
 
             List<PcapPacket> handshakePackets = handshakes.get(i).getPackets();
-            Integer indexFirstPacketHandshake = handshakes.get(i).getCertainIndex();
+            int indexFirstPacketHandshake = handshakes.get(i).getCertainIndex();
 
             List<PcapPacket> finishesPackets = finishes.get(i);
             PcapPacket firstPacketFinishes = finishes.get(i).get(0);

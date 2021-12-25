@@ -3,7 +3,6 @@ package creation;
 import constants.XESConstants;
 import exceptions.PacketListIsEmptyException;
 import exceptions.TimestampsNotFittingException;
-import exceptions.UnavailableException;
 import org.w3c.dom.Element;
 import packets.PcapPacket;
 import packets.Session;
@@ -82,7 +81,7 @@ public class FlagsubmissionService extends AbstractXESService implements IServic
         System.out.println("Amount of handshakes "+handshakes.size());
         List<List<PcapPacket>> finishes=DefaultEventCreator.checkForFinishing(packetList);
         System.out.println("Amount of finishes "+finishes.size());
-        List<Flagsubmission> flagsubmissions= FlagsubmissionEventCreator.buildFlagsubmissions(handshakes,finishes,packetList,getTeamIP(),FLAGSUBMISSION_IP);
+        List<Flagsubmission> flagsubmissions= FlagsubmissionEventCreator.buildFlagsubmissions(handshakes,finishes,packetList);
         System.out.println("The following Flagsubmissions were detected: "+flagsubmissions.size());
         createFlagsubmissionXES(flagsubmissions,xesManager);
     }

@@ -10,10 +10,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class OvercovertReader {
-    private static final Logger logger= Logger.getLogger(OvercovertReader.class.getName());
 
     private static final String HTTP_CONTINUATION_STRING = "COMMAND:";
 
@@ -31,7 +29,7 @@ public class OvercovertReader {
             if(currentlyOpen.containsKey(current.getPortSender()) || currentlyOpen.containsKey(current.getPortReceiver())) {
                 //Port is already known
                 Overcovert overcovert;
-                Integer port;
+                int port;
                 if(currentlyOpen.get(current.getPortSender())!=null) {
                     overcovert=currentlyOpen.get(current.getPortSender());
                     port=current.getPortSender();
@@ -97,18 +95,12 @@ public class OvercovertReader {
 
     private boolean isOvercovertFinished(Overcovert overcovert) {
         HashMap<Handshakes, PcapPacket> handshakes= overcovert.getHandshakes();
-        if (handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null &&
-                handshakes.get(Handshakes.THIRD) != null && overcovert.getReset() != null) {
-            return true;
-        }
-        return false;
+        return handshakes.get(Handshakes.FIRST) != null && handshakes.get(Handshakes.SECOND) != null &&
+                handshakes.get(Handshakes.THIRD) != null && overcovert.getReset() != null;
     }
 
     private boolean isFinishFinished(HashMap<Finishes, PcapPacket> finish) {
-        if(finish.get(Finishes.FIRST)!=null && finish.get(Finishes.SECOND)!=null && finish.get(Finishes.THIRD)!=null) {
-            return true;
-        }
-        return false;
+        return finish.get(Finishes.FIRST) != null && finish.get(Finishes.SECOND) != null && finish.get(Finishes.THIRD) != null;
     }
 
     private Overcovert checkWhichPacket(Overcovert overcovert, PcapPacket current,
@@ -173,26 +165,18 @@ public class OvercovertReader {
     }
 
     private boolean isAlreadyHandshake(HashMap<Handshakes, PcapPacket> handshakes) {
-        if (handshakes.get(Handshakes.FIRST) == null
-                || handshakes.get(Handshakes.SECOND) == null
-                || handshakes.get(Handshakes.THIRD) == null) {
-            return false;
-        }
-        return true;
+        return handshakes.get(Handshakes.FIRST) != null
+                && handshakes.get(Handshakes.SECOND) != null
+                && handshakes.get(Handshakes.THIRD) != null;
     }
 
     private boolean isSYNpacket(PcapPacket packet) {
-        if (packet.getTcpFlags().get("SYN")) {
-            return true;
-        }
-        return false;
+        return packet.getTcpFlags().get("SYN");
     }
 
     private boolean isSecondPacketHandshake(PcapPacket packet, InetAddress service) {
         if (packet.getIpSender().equals(service) /*&& packet.getAckNumber() == (firstHandshake.getSeqNumber() + 1)*/) {
-            if (packet.getTcpFlags().get("SYN") && packet.getTcpFlags().get("ACK")) {
-                return true;
-            }
+            return packet.getTcpFlags().get("SYN") && packet.getTcpFlags().get("ACK");
         }
         return false;
     }
@@ -203,60 +187,31 @@ public class OvercovertReader {
         if (Network.isInSameNetwork(packet.getIpSender(), client, teamMask)
                 && packet.getAckNumber() == (secondHandshake.getSeqNumber() + 1)
                 && packet.getSeqNumber() == secondHandshake.getAckNumber()) {
-            if (packet.getTcpFlags().get("ACK")) {
-                return true;
-            }
+            return packet.getTcpFlags().get("ACK");
         }
         return false;
     }
 
     private boolean isFirstFinishPacket(PcapPacket packet) {
-        if (packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getIPPayload(),packet.getTcpPayload())) {
-            return true;
-        }
-        return false;
+        return packet.getTcpFlags().get("FIN") && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload());
     }
 
     private boolean isSecondFinishPacket(PcapPacket packet, HashMap<Finishes, PcapPacket> finishes) {
         PcapPacket firstFinish= finishes.get(Finishes.FIRST);
-        if (packet.getIpSender().equals(firstFinish.getIpReceiver()) && packet.getTcpFlags().get("ACK")
+        return packet.getIpSender().equals(firstFinish.getIpReceiver()) && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (firstFinish.getSeqNumber() + 1)
-                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
-            return true;
-        }
-        return false;
+                && packet.getSeqNumber() == firstFinish.getAckNumber() && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload());
     }
 
     private boolean isThirdFinishPacket(PcapPacket packet, HashMap<Finishes, PcapPacket> finishes) {
-        if (packet.getIpSender().equals(finishes.get(Finishes.FIRST).getIpSender())
+        return packet.getIpSender().equals(finishes.get(Finishes.FIRST).getIpSender())
                 && packet.getTcpFlags().get("ACK")
                 && packet.getAckNumber() == (finishes.get(Finishes.SECOND).getSeqNumber() + 1)
-                && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload())) {
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean isPSHOrACKFlagSet(HashMap<String, Boolean> flags, String iPPayload, String tcpPayload) {
-        boolean result = false;
-
-        if (flags.get("PSH") || flags.get("ACK")) {
-            if (flags.get("FIN") == false && flags.get("SYN") == false) {
-                result = true;
-            }
-            if(isHTTPContinuation(iPPayload,tcpPayload)) {
-                result=true;
-            }
-
-        }
-        return result;
+                && !isHTTPContinuation(packet.getIPPayload(), packet.getTcpPayload());
     }
 
     private static boolean isHTTPContinuation(String iPPayload, String tcpPayload) {
-        if (iPPayload!=null && iPPayload.contains(HTTP_CONTINUATION_STRING) ||
-                (tcpPayload!=null && tcpPayload.contains(HTTP_CONTINUATION_STRING))) {
-            return true;
-        }
-        return false;
+        return iPPayload != null && iPPayload.contains(HTTP_CONTINUATION_STRING) ||
+                (tcpPayload != null && tcpPayload.contains(HTTP_CONTINUATION_STRING));
     }
 }

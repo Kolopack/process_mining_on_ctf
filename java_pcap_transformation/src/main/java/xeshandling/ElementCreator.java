@@ -2,8 +2,6 @@ package xeshandling;
 
 import constants.HTTPConstants;
 import constants.XESConstants;
-import exceptions.NoMethodFoundException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import packets.PcapPacket;
 
@@ -12,33 +10,31 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
+/**
+ * The type Element creator.
+ * In this class Elements which are default and so used by all services are served.
+ * So static methods are common here, where default Elements can be created.
+ */
 public class ElementCreator {
 
-    private static Document document;
     private static final String EXTRACTINGINDEXSTRING = "Host:";
 
-    public ElementCreator(Document document) {
-        this.document = document;
+    /**
+     * Instantiates a new Element creator.
+     */
+    public ElementCreator() {
     }
 
-    public static Element createSimpleElement(String name, HashMap<String, String> parameters) {
-        Element result = document.createElement(name);
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            result.setAttribute(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
-    public static Element createNestedElement(String name, ArrayList<Element> children) {
-        Element result = document.createElement(name);
-        for (Element elem : children) {
-            result.appendChild(elem);
-        }
-        return result;
-    }
-
+    /**
+     * Gets hand shake or finish event.
+     *
+     * @param packets     the packets to be analysed
+     * @param xesManager  instance of XESManager
+     * @param conceptName the concept name to be used for the Element
+     * @return The DOM-element representing the Handshake- or Finish-event
+     */
     public static Element getHandShakeOrFinishEvent(List<PcapPacket> packets, XESManager xesManager, String conceptName) {
         PcapPacket firstPacketHandshake = packets.get(0);
         PcapPacket lastPacketHandshake = packets.get(packets.size() - 1);
@@ -67,10 +63,16 @@ public class ElementCreator {
         if (dateElement != null) {
             elements.add(dateElement);
         }
-        Element handshakeOrFinishEvent = xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
-        return handshakeOrFinishEvent;
+        return xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
     }
 
+    /**
+     * Gets events of pshack.
+     *
+     * @param packets    the packets to be analysed
+     * @param xesManager instance of XESManager
+     * @return ArrayList containing the Elements found and created out of the Packet-list
+     */
     public static ArrayList<Element> getEventsOfPSHACK(List<PcapPacket> packets, XESManager xesManager) {
 
         ArrayList<Element> result = new ArrayList<>();
@@ -86,17 +88,27 @@ public class ElementCreator {
         return result;
     }
 
+    /**
+     * Is http requesting boolean.
+     *Checks whether a given payload contains HTTP-requests or not
+     * @param payload the payload of a packet as String
+     * @return the boolean indicating whether the payload contained a HTTP-requesting or not
+     */
     public static boolean isHTTPRequesting(String payload) {
         if (payload == null) {
             return false;
         }
         //We only want HTTP-REST requests, but not the ones which are just requesting of favicons
-        if (payload.contains("HTTP") && !payload.contains("favicon")) {
-            return true;
-        }
-        return false;
+        return payload.contains("HTTP") && !payload.contains("favicon");
     }
 
+    /**
+     * Gets http event element.
+     *Returns the created Element for representing an HTTP-event
+     * @param packet     the packet which contains the HTTP-requesting
+     * @param xesManager instance of XESManager
+     * @return the http event DOM-element
+     */
     public static Element getHTTPEventElement(PcapPacket packet, XESManager xesManager) {
         String httpMethod = getHTTPMethod(packet.getTcpPayload());
         if (httpMethod == null) {
@@ -116,10 +128,7 @@ public class ElementCreator {
         methodArguments.put(XESConstants.VALUE_STRING, httpMethod);
         Element httpMethodElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, methodArguments);
 
-        HashMap<String, String> uriArguments = new HashMap<>();
-        uriArguments.put(XESConstants.KEY_STRING, "fullURI");
-        uriArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
-        Element uriElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, uriArguments);
+        Element uriElement = getURIElement(packet,xesManager);
 
         Element requester = getRequesterOrInitiator(packet, xesManager, XESConstants.INITIATOR_STRING);
 
@@ -132,10 +141,16 @@ public class ElementCreator {
         elements.add(requester);
         elements.add(date);
 
-        Element result = xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
-        return result;
+        return xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
     }
 
+    /**
+     * Method for getting an HTTP-event which represents a POST-request (including the then changed attributes)
+     * @param httpMethod The HTTP-method as String
+     * @param packet the packet containing the request
+     * @param xesManager instance of XESManager
+     * @return an Java DOM-element representing the POST-HTTP-Requesting
+     */
     private static Element getPostSubmitEvent(String httpMethod,PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
@@ -146,10 +161,7 @@ public class ElementCreator {
         methodArguments.put(XESConstants.VALUE_STRING, httpMethod);
         Element httpMethodElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, methodArguments);
 
-        HashMap<String, String> postURIArguments=new HashMap<>();
-        postURIArguments.put(XESConstants.KEY_STRING, "fullURI");
-        postURIArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
-        Element uriElement= xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, postURIArguments);
+        Element uriElement= getURIElement(packet,xesManager);
 
         Element requestor=getRequesterOrInitiator(packet,xesManager,XESConstants.REQUESTER_STRING);
 
@@ -164,10 +176,15 @@ public class ElementCreator {
         elements.add(uriElement);
         elements.add(requestor);
         elements.add(dateElement);
-        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
-        return result;
+        return xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
     }
 
+    /**
+     * Method which checks a List of packets and extracts the PSH-ACK-attack events out of them
+     * @param packets The list of packets to be analysed
+     * @param xesManager instance of XESManager
+     * @return ArrayList containing all created DOM-Elements which indicate PSH-ACK-attacks
+     */
     private static ArrayList<Element> getPSHACKEvents(List<PcapPacket> packets, XESManager xesManager) {
         ArrayList<Element> result=new ArrayList<>();
 
@@ -190,6 +207,13 @@ public class ElementCreator {
         return result;
     }
 
+    /**
+     * This method is called by the getPSHACKEvents-method for building the Java DOM-elements
+     * @param pshack PcapPacket which contains a PSH
+     * @param ack PcapPacket which contains an ACK to this PSH
+     * @param xesManager instance of XESManager
+     * @return DOM-element representing one PSHACK-attack
+     */
     private static Element createPSHACKEvent(PcapPacket pshack, PcapPacket ack, XESManager xesManager) {
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
@@ -198,7 +222,7 @@ public class ElementCreator {
 
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
-        Element receiver=getDestinationOrReceiver(pshack,xesManager,XESConstants.RECEIVER_STRING);
+        Element receiver=getDestinationOrReceiver(pshack,xesManager);
 
         HashMap<String, String> ackParameters=new HashMap<>();
         ackParameters.put(XESConstants.KEY_STRING,XESConstants.ACKRETURNED_STRING);
@@ -210,13 +234,8 @@ public class ElementCreator {
         }
         Element ackElement=xesManager.createSimpleElement(XESConstants.BOOLEAN_ARGUMENT,ackParameters);
 
-        Element dateElement=null;
-        if(ack==null) {
-            dateElement=getDateElement(pshack,xesManager);
-        }
-        else {
-            dateElement=getDateElement(ack,xesManager);
-        }
+        Element dateElement;
+        dateElement = getDateElement(Objects.requireNonNullElse(ack, pshack), xesManager);
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(conceptName);
         elements.add(sender);
@@ -224,38 +243,44 @@ public class ElementCreator {
         elements.add(ackElement);
         elements.add(dateElement);
 
-        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
-        return result;
+        return xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
     }
 
+    /**
+     * Method for extracting the exact HTTP-method used in a HTTP-request
+     * @param payload the payload of a PcapPacket as String
+     * @return the HTTP-method as String
+     */
     private static String getHTTPMethod(String payload) {
         String result = getFirstWordRight(payload);
         if (result != null) {
             return result;
         }
         result = simplyCheckContaining(payload);
-        if (result != null) {
-            return result;
-        }
-        return null;
+        return result;
     }
 
+    /**
+     * Method called by getHTTPMethod(), for extracting the Word of HTTP-Method out of the long payload.
+     * @param payload The payload of a PcapPacket as String
+     * @return The first word (the method) as a String
+     */
     private static String getFirstWordRight(String payload) {
         String firstWord = payload.substring(0, payload.indexOf(' '));
 
-        switch (firstWord) {
-            case HTTPConstants.GET:
-                return HTTPConstants.GET;
-            case HTTPConstants.DELETE:
-                return HTTPConstants.DELETE;
-            case HTTPConstants.POST:
-                return HTTPConstants.POST;
-            case HTTPConstants.PUT:
-                return HTTPConstants.PUT;
-        }
-        return null;
+        return switch (firstWord) {
+            case HTTPConstants.GET -> HTTPConstants.GET;
+            case HTTPConstants.POST -> HTTPConstants.POST;
+            default -> null;
+        };
     }
 
+    /**
+     *Method which simply checks if a certain HTTP-request-method is contained in a given payload.
+     * This method is called when the other, more precise methods can not find a result.
+     * @param payload of a packet as a String
+     * @return The String if an HTTP-method was found, null otherwise
+     */
     private static String simplyCheckContaining(String payload) {
         if (payload.contains(HTTPConstants.GET)) {
             return HTTPConstants.GET;
@@ -263,15 +288,15 @@ public class ElementCreator {
         if (payload.contains(HTTPConstants.POST)) {
             return HTTPConstants.POST;
         }
-        if (payload.contains(HTTPConstants.PUT)) {
-            return HTTPConstants.PUT;
-        }
-        if (payload.contains(HTTPConstants.DELETE)) {
-            return HTTPConstants.DELETE;
-        }
         return null;
     }
 
+    /**
+     * Method to get a host-address (IP-address) out of the Payload of a packet, for creating corresponding
+     * DOM-tags.
+     * @param payload of a packet as String
+     * @return found IP-address as java.net.InetAddress
+     */
     private static InetAddress getExtractedHostAddress(String payload) {
         InetAddress result = null;
 
@@ -279,47 +304,70 @@ public class ElementCreator {
 
         int index = payload.indexOf(EXTRACTINGINDEXSTRING);
         String rest = payload.substring(index + EXTRACTINGINDEXSTRING.length() + 1);
-        String addressString = "";
+        StringBuilder addressString = new StringBuilder();
 
         for (int i = 0; i < rest.length(); ++i) {
             char temp = rest.charAt(i);
             if (Character.isLetter(temp) || temp == ':') {
                 break;
             }
-            addressString += temp;
+            addressString.append(temp);
         }
         try {
-            result = InetAddress.getByName(addressString);
+            result = InetAddress.getByName(addressString.toString());
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
         return result;
     }
 
+    /**
+     * Method which builds and returns a Date-element as found as attribute in many event-tags
+     * @param packet PcapPacket which contains the Timestamp-data
+     * @param xesManager Instance of XESManager
+     * @return created Java DOM-Element
+     */
     private static Element getDateElement(PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> dateArguments = new HashMap<>();
         dateArguments.put(XESConstants.KEY_STRING, XESConstants.TIME_NAME);
         dateArguments.put(XESConstants.VALUE_STRING, packet.getArrivalTime().toString());
-        Element result = xesManager.createSimpleElement(XESConstants.DATE_ARGUMENT, dateArguments);
-        return result;
+        return xesManager.createSimpleElement(XESConstants.DATE_ARGUMENT, dateArguments);
     }
 
+    /**
+     * Method for getting a created DOM-Element for the Requestor/Initiator of an event
+     * @param packet the PcapPacket-object holding the required information
+     * @param xesManager instance of XESManager
+     * @param description Description to build (f.i. Initiator or Requestor)
+     * @return the created DOM-element with given properties
+     */
     private static Element getRequesterOrInitiator(PcapPacket packet, XESManager xesManager, String description) {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put(XESConstants.KEY_STRING, description);
         arguments.put(XESConstants.VALUE_STRING, packet.getIpSender().getHostAddress());
-        Element result = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
-        return result;
+        return xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
     }
 
-    private static Element getDestinationOrReceiver(PcapPacket packet, XESManager xesManager, String description) {
+    /**
+     * Method for getting created Destination/Receiver-Element-Tag for DOM
+     * @param packet the PcapPacket holding the required information
+     * @param xesManager instance of XESManager
+     * @return the created DOM-Element for the Destination/Receiver-tag
+     */
+    private static Element getDestinationOrReceiver(PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> arguments = new HashMap<>();
-        arguments.put(XESConstants.KEY_STRING, description);
+        arguments.put(XESConstants.KEY_STRING, XESConstants.RECEIVER_STRING);
         arguments.put(XESConstants.VALUE_STRING, packet.getIpReceiver().getHostAddress());
-        Element result = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
-        return result;
+        return xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, arguments);
     }
 
+    /**
+     * Gets reset element out of given properties
+     *
+     * @param packet     the packet holding the required information
+     * @param xesManager instance of XESManager
+     * @return the reset element as created with the given properties
+     */
     public static Element getResetElement(PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
@@ -335,7 +383,19 @@ public class ElementCreator {
         elements.add(sender);
         elements.add(timestamp);
 
-        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
-        return result;
+        return xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+    }
+
+    /**
+     * Method for getting created URI-Element with given properties (used f.i. in Flagsubmission-XES)
+     * @param packet PcapPacket holding the information
+     * @param xesManager instance of XESManager
+     * @return the created Element
+     */
+    private static Element getURIElement(PcapPacket packet, XESManager xesManager) {
+        HashMap<String, String> postURIArguments=new HashMap<>();
+        postURIArguments.put(XESConstants.KEY_STRING, "fullURI");
+        postURIArguments.put(XESConstants.VALUE_STRING, getExtractedHostAddress(packet.getTcpPayload()).getHostAddress());
+        return xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, postURIArguments);
     }
 }
