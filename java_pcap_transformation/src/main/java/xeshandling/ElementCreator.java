@@ -99,7 +99,9 @@ public class ElementCreator {
             return false;
         }
         //We only want HTTP-REST requests, but not the ones which are just requesting of favicons
-        return payload.contains("HTTP") && !payload.contains("favicon");
+        return (payload.contains(HTTPConstants.HTTP) || payload.contains(HTTPConstants.GET) ||
+                payload.contains(HTTPConstants.POST))
+                && !payload.contains("favicon");
     }
 
     /**
@@ -114,9 +116,9 @@ public class ElementCreator {
         if (httpMethod == null) {
             return null;
         }
-        /*if(httpMethod.equals(HTTPConstants.POST)) {
+        if(httpMethod.equals(HTTPConstants.POST)) {
             return getPostSubmitEvent(httpMethod,packet,xesManager);
-        }*/
+        }
         HashMap<String, String> conceptArguments = new HashMap<>();
         conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
         conceptArguments.put(XESConstants.VALUE_STRING, "HTTP-Request");
@@ -252,7 +254,7 @@ public class ElementCreator {
      * @return the HTTP-method as String
      */
     private static String getHTTPMethod(String payload) {
-        String result = getFirstWordRight(payload);
+        String result = getContainedHTTPMethod(payload);
         if (result != null) {
             return result;
         }
@@ -265,14 +267,21 @@ public class ElementCreator {
      * @param payload The payload of a PcapPacket as String
      * @return The first word (the method) as a String
      */
-    private static String getFirstWordRight(String payload) {
-        String firstWord = payload.substring(0, payload.indexOf(' '));
+    private static String getContainedHTTPMethod(String payload) {
+        /*String firstWord = payload.substring(0, payload.indexOf(' '));
 
-        return switch (firstWord) {
+        return switch (payload.contains()) {
             case HTTPConstants.GET -> HTTPConstants.GET;
             case HTTPConstants.POST -> HTTPConstants.POST;
             default -> null;
-        };
+        };*/
+        if(payload.contains(HTTPConstants.GET)) {
+            return HTTPConstants.GET;
+        }
+        if(payload.contains(HTTPConstants.POST)) {
+            return HTTPConstants.POST;
+        }
+        return null;
     }
 
     /**

@@ -4,7 +4,7 @@ package exceptions;
  * Exception which is thrown when the program identified a HTTP-method, but could not indicate further,
  * which method (GET, POST,..)
  */
-public class NoMethodFoundException extends RuntimeException{
+public class NoMethodFoundException extends Exception{
     /**
      * Static error-message
      */

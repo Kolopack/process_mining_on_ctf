@@ -32,7 +32,8 @@ public class PcapReader {
     /**
      * The ending. With this Regular Expression, all PCAP-files are reached
      */
-    private static final String pcapEnding=".*\\.pcap.*";
+    //private static final String pcapEnding=".*\\.pcap.*";
+    private static final String pcapEnding="ictf2010.pcap48";
     /**
      * File-object which holds the path to the directory which is to be read for PCAP-files
      */
@@ -199,25 +200,14 @@ public class PcapReader {
                     InetAddress ipDestination = InetAddress.getByName(ipPacket.getDestinationIP());
 
                     if (iPisSenderOrReceiver(ipSource, ipDestination)) {
-                        System.out.println("packet spotted");
                         if (packet.hasProtocol(Protocol.TCP)) {
                             TCPPacket tcpPacket=(TCPPacket) packet.getPacket(Protocol.TCP);
                             ++importantPacket;
                             if(tcpPacket==null) {
                                 System.out.println("But TCP-Packet is null.");
                             }
-                            System.out.println("One of them, here are the packets:");
-                            System.out.println("IP-packet: ");
-                            System.out.println(ipPacket.getPayload());
-                            System.out.println("TCP-Packet: ");
-                            if (tcpPacket != null) {
-                                System.out.println("TCP-Payload: " + tcpPacket.getPayload());
-                            } else {
-                                System.out.println("null");
-                            }
                             PcapPacket myPacket=PacketConverter.convertPacket(ipPacket,tcpPacket);
                             packets.add(myPacket);
-
                         }
                     }
                 }
