@@ -32,8 +32,8 @@ public class PcapReader {
     /**
      * The ending. With this Regular Expression, all PCAP-files are reached
      */
-    //private static final String pcapEnding=".*\\.pcap.*";
-    private static final String pcapEnding="ictf2010.pcap48";
+    private static final String pcapEnding=".*\\.pcap.*";
+    //private static final String pcapEnding="ictf2010.pcap48";
     /**
      * File-object which holds the path to the directory which is to be read for PCAP-files
      */
@@ -119,12 +119,19 @@ public class PcapReader {
      * the PCAP-files found at this path.
      */
     private void importFilepath() {
-        File[] fileArray = directoryPath.listFiles((dir, name) -> name.matches(pcapEnding));
-        if(fileArray!=null) {
-            fileList = Arrays.asList(fileArray);
+        if(directoryPath.isDirectory()) {
+            File[] fileArray = directoryPath.listFiles((dir, name) -> name.matches(pcapEnding));
+            if (fileArray != null) {
+                fileList = Arrays.asList(fileArray);
+            }
+            sortFileListNumerically();
+            printOutFileList();
         }
-        sortFileListNumerically();
-        printOutFileList();
+        else if(directoryPath.isFile()) {
+            fileList=new ArrayList<>();
+            fileList.add(directoryPath);
+            printOutFileList();
+        }
     }
 
     /**

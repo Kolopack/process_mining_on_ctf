@@ -25,27 +25,41 @@ public class Main {
     private static final  String flagsubmissionName="Flagsubmission";
 
     public static void main(String[] args) {
-        PcapReader reader=new PcapReader(teamName, mostwantedName, pathToXES);
-        PcapReader readerOvercovert=new PcapReader(teamName,overcovertName,pathToXES);
-        PcapReader readerFlagsubmission=new PcapReader(teamName,flagsubmissionName,pathToXES);
+        CLI cli=new CLI();
+
+        //PcapReader reader=new PcapReader(teamName, mostwantedName, pathToXES);
+        PcapReader reader=new PcapReader(cli.getTeamName(), cli.getServiceName(), cli.getXESFilePath());
+
+        //PcapReader readerOvercovert=new PcapReader(teamName,overcovertName,pathToXES);
+        //PcapReader readerFlagsubmission=new PcapReader(teamName,flagsubmissionName,pathToXES);
+
 
         try{
-            InetAddress teamIp=InetAddress.getByName(ipBushwhackers);
-            InetAddress mostwantedIp=InetAddress.getByName(ipMostwanted);
-            InetAddress overcovertIp=InetAddress.getByName(ipOvercovert);
-            InetAddress flagsubmissionIp=InetAddress.getByName(ipFlagsubmission);
+            //InetAddress teamIp=InetAddress.getByName(ipBushwhackers);
+            InetAddress teamIp=InetAddress.getByName(cli.getIPStringOfTeam());
 
-            /*reader.importPcap(pcapFilesDirectory);
-            reader.readFiles(teamIp, subnetmaskBushwhackers,mostwantedIp);
-            System.out.println("Finished storing - mostwanted");*/
+            //InetAddress mostwantedIp=InetAddress.getByName(ipMostwanted);
+            InetAddress mostwantedIp=InetAddress.getByName(cli.getIPStringOfService());
+
+            String subnetmask= cli.getSubnetMaskOfTeam();;
+
+            //InetAddress overcovertIp=InetAddress.getByName(ipOvercovert);
+            //InetAddress flagsubmissionIp=InetAddress.getByName(ipFlagsubmission);
+
+            //reader.importPcap(pcapFilesDirectory);
+            reader.importPcap(cli.getPCAPFilePathOrDirectory());
+
+            //reader.readFiles(teamIp, subnetmaskBushwhackers,mostwantedIp);
+            reader.readFiles(teamIp,subnetmask,mostwantedIp);
+            System.out.println("Finished storing - mostwanted");
 
             /*readerOvercovert.importPcap(pcapFilesDirectory);
             readerOvercovert.readFiles(teamIp,subnetmaskBushwhackers,overcovertIp);
             System.out.println("Finished storing - overcovert");*/
 
-            readerFlagsubmission.importPcap(pcapFilesDirectory);
+            /*readerFlagsubmission.importPcap(pcapFilesDirectory);
             readerFlagsubmission.readFiles(teamIp,subnetmaskBushwhackers,flagsubmissionIp);
-            System.out.println("Finished storing - flagsubmission");
+            System.out.println("Finished storing - flagsubmission");*/
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
