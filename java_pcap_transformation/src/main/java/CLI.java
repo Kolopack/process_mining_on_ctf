@@ -12,21 +12,19 @@ public class CLI {
     /**
      * The Scanner instance, to read the user input
      */
-    Scanner scanner;
+    private Scanner scanner;
     /**
      * The Properties-instance, as the output texts are stored inside of a properties-file
      */
-    Properties properties;
+    private Properties properties;
     /**
      * The File reader instance to read the Properties-file
      */
-    FileReader fileReader;
+    private FileReader fileReader;
     /**
      * The path to the properties-file
      */
     private final static String PATH_TO_PROPERTIES="src/main/java/cliprogram.properties";
-
-    //TODO: create Javadoc comments
 
     /**
      * Instantiates a new Cli and so also shows the Welcome-message and credits to the user.

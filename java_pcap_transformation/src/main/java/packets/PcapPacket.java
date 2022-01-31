@@ -28,7 +28,7 @@ public class PcapPacket implements Serializable {
     /**
      * Arrival-time of the packet as Timestamp, out of the IP-protocol-data of the packet
      */
-    private Timestamp ArrivalTime;
+    private Timestamp arrivalTime;
     /**
      * FragmentOffset (when information is sent over several packets)
      */
@@ -89,7 +89,7 @@ public class PcapPacket implements Serializable {
      * @param arrivalTime the arrival time
      */
     public void setArrivalTime(Timestamp arrivalTime) {
-        ArrivalTime = arrivalTime;
+        this.arrivalTime = arrivalTime;
     }
 
     /**
@@ -179,7 +179,7 @@ public class PcapPacket implements Serializable {
      * @return the arrival time
      */
     public Timestamp getArrivalTime() {
-        return ArrivalTime;
+        return arrivalTime;
     }
 
     /**
@@ -269,7 +269,7 @@ public class PcapPacket implements Serializable {
                 "identification=" + identification +
                 ", ipSender='" + ipSender.getHostName() + '\'' +
                 ", ipReceiver='" + ipReceiver.getHostName() + '\'' +
-                ", ArrivalTime=" + ArrivalTime +
+                ", ArrivalTime=" + arrivalTime +
                 ", fragmentOffset=" + fragmentOffset +
                 ", ipHeaderLength=" + ipHeaderLength +
                 ", iPPayload=" + iPPayload +

@@ -2,7 +2,6 @@ package converters;
 
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.TCPPacket;
-import io.pkts.protocol.Protocol;
 import packets.PcapPacket;
 
 import java.net.InetAddress;
