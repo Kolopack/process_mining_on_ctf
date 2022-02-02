@@ -39,11 +39,6 @@ public class ElementCreator {
         PcapPacket firstPacketHandshake = packets.get(0);
         PcapPacket lastPacketHandshake = packets.get(packets.size() - 1);
 
-        HashMap<String, String> conceptNameArguments = new HashMap<>();
-        conceptNameArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
-        conceptNameArguments.put(XESConstants.VALUE_STRING, conceptName);
-        Element conceptElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptNameArguments);
-
         Element initiatorElement = null;
         if (firstPacketHandshake != null) {
             initiatorElement = getRequesterOrInitiator(firstPacketHandshake, xesManager, XESConstants.INITIATOR_STRING);
@@ -55,7 +50,6 @@ public class ElementCreator {
 
 
         ArrayList<Element> elements = new ArrayList<>();
-        elements.add(conceptElement);
 
         if (initiatorElement != null) {
             elements.add(initiatorElement);
@@ -63,7 +57,11 @@ public class ElementCreator {
         if (dateElement != null) {
             elements.add(dateElement);
         }
-        return xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+        result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        result.setAttribute(XESConstants.VALUE_STRING, conceptName);
+        return result;
     }
 
     /**
@@ -119,11 +117,6 @@ public class ElementCreator {
         if(httpMethod.equals(HTTPConstants.POST)) {
             return getPostSubmitEvent(httpMethod,packet,xesManager);
         }
-        HashMap<String, String> conceptArguments = new HashMap<>();
-        conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
-        conceptArguments.put(XESConstants.VALUE_STRING, "HTTP-Request");
-        Element conceptName = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptArguments);
-
         HashMap<String, String> methodArguments = new HashMap<>();
         methodArguments.put(XESConstants.KEY_STRING, "HTTP-method");
 
@@ -137,13 +130,15 @@ public class ElementCreator {
         Element date = getDateElement(packet, xesManager);
 
         ArrayList<Element> elements = new ArrayList<>();
-        elements.add(conceptName);
         elements.add(httpMethodElement);
         elements.add(uriElement);
         elements.add(requester);
         elements.add(date);
 
-        return xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING, elements);
+        result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        result.setAttribute(XESConstants.VALUE_STRING, "HTTP-Request");
+        return result;
     }
 
     /**
@@ -217,11 +212,6 @@ public class ElementCreator {
      * @return DOM-element representing one PSHACK-attack
      */
     private static Element createPSHACKEvent(PcapPacket pshack, PcapPacket ack, XESManager xesManager) {
-        HashMap<String, String> conceptArguments = new HashMap<>();
-        conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
-        conceptArguments.put(XESConstants.VALUE_STRING, "PSH ACK");
-        Element conceptName = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptArguments);
-
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
         Element receiver=getDestinationOrReceiver(pshack,xesManager);
@@ -239,13 +229,15 @@ public class ElementCreator {
         Element dateElement;
         dateElement = getDateElement(Objects.requireNonNullElse(ack, pshack), xesManager);
         ArrayList<Element> elements=new ArrayList<>();
-        elements.add(conceptName);
         elements.add(sender);
         elements.add(receiver);
         elements.add(ackElement);
         elements.add(dateElement);
 
-        return xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
+        result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        result.setAttribute(XESConstants.VALUE_STRING, "PSH ACK");
+        return result;
     }
 
     /**

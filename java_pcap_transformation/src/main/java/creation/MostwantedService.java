@@ -134,6 +134,8 @@ public class MostwantedService extends AbstractXESService implements IService {
         traceElements.add(finishingEvent);
 
         Element trace = xesManager.createNestedElement(XESConstants.TRACE_ARGUMENT, traceElements);
+        trace.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        trace.setAttribute(XESConstants.VALUE_STRING, XESConstants.MOSTWANTED_TRACE_NAME);
         return trace;
     }
 }

@@ -73,4 +73,8 @@ public class XESConstants {
      * Constant for setting the concept:name-value of an overcovert-trace
      */
     public static final String OVERCOVERT_TRACE_NAME="Attacking the overcovert service";
+    /**
+     * Constant for setting the concept:name-value of a mostwanted-trace
+     */
+    public static final String MOSTWANTED_TRACE_NAME="Attacking the mostwanted service";
 }
