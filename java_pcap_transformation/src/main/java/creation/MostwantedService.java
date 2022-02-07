@@ -12,6 +12,7 @@ import xeshandling.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -47,6 +48,55 @@ public class MostwantedService extends AbstractXESService implements IService {
      */
     public MostwantedService(String teamName, InetAddress teamIP, String teamMask) {
         super(MOSTWANTED, teamName, teamIP, teamMask, MOSTWANTED_IP);
+    }
+
+    /**
+     * Gets receive ack element.
+     *
+     * @param packet   the packet which should hold the ACK (null when no ack)
+     * @param xesManager instance of XESManager for creating elements
+     * @return the receive ack element
+     */
+    public static Element getReceiveAckElement(PcapPacket packet, XESManager xesManager) {
+        ArrayList<Element> children=new ArrayList<>();
+
+        HashMap<String, String> ackParameters=new HashMap<>();
+        ackParameters.put(XESConstants.KEY_STRING,XESConstants.ACKRETURNED_STRING);
+        if(packet==null) {
+            ackParameters.put(XESConstants.VALUE_STRING,"false");
+            Element ackElement=xesManager.createSimpleElement(XESConstants.BOOLEAN_ARGUMENT,ackParameters);
+            children.add(ackElement);
+        }
+        else {
+            ackParameters.put(XESConstants.VALUE_STRING, "true");
+            Element ackElement=xesManager.createSimpleElement(XESConstants.BOOLEAN_ARGUMENT,ackParameters);
+            children.add(ackElement);
+            Element dateElement=ElementCreator.getDateElement(packet,xesManager);
+            children.add(dateElement);
+        }
+
+        Element result= xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,children);
+        result.setAttribute(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
+        result.setAttribute(XESConstants.VALUE_STRING,XESConstants.RECEIVE_ACK_NAME);
+        return result;
+    }
+
+    /**
+     * Gets mostwanted attack element.
+     *
+     * @param children the children
+     * @return the mostwanted attack element
+     */
+    public static Element getMostwantedAttackElement(ArrayList<Element> children, XESManager xesManager, boolean isAttack) {
+        Element attackEvent= xesManager.createNestedElement(XESConstants.EVENT_STRING, children);
+        attackEvent.setAttribute(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
+        if(isAttack) {
+            attackEvent.setAttribute(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
+        }
+        else {
+            attackEvent.setAttribute(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
+        }
+        return attackEvent;
     }
 
     /**
@@ -120,7 +170,7 @@ public class MostwantedService extends AbstractXESService implements IService {
         Element handshakeEvent = ElementCreator.getHandShakeOrFinishEvent(handshakes, xesManager, XESConstants.HANDSHAKE_CONCEPT_NAME);
 
         List<PcapPacket> pshAckPackets = mostwanted.getPSHACKAttacks();
-        ArrayList<Element> pshAckEvents = ElementCreator.getEventsOfPSHACK(pshAckPackets, xesManager);
+        ArrayList<Element> pshAckEvents = ElementCreator.getEventsOfPSHACK(pshAckPackets, xesManager, MOSTWANTED_IP);
 
         //Get Event-Element for Finishes
         List<PcapPacket> finishes = mostwanted.getTCPFinishingPackets();

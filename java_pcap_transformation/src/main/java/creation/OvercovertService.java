@@ -118,7 +118,7 @@ public class OvercovertService extends AbstractXESService implements IService{
         Element handshakeElement= ElementCreator.getHandShakeOrFinishEvent(handshakeList,xesManager, XESConstants.HANDSHAKE_CONCEPT_NAME);
 
         List<PcapPacket> pshackList=overcovert.getInbetween();
-        List<Element> pshAckElements=ElementCreator.getEventsOfPSHACK(pshackList, xesManager);
+        List<Element> pshAckElements=ElementCreator.getEventsOfPSHACK(pshackList, xesManager, OVERCOVERT_IP);
 
         List<HashMap<Finishes, PcapPacket>> finishesList=overcovert.getFinishes();
         ArrayList<Element> finishesElements=new ArrayList<>();

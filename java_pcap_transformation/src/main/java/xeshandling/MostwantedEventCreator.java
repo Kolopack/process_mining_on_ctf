@@ -1,6 +1,8 @@
 package xeshandling;
 
+import constants.XESConstants;
 import enumerations.MostwantedPart;
+import org.w3c.dom.Element;
 import serviceRepresentation.Mostwanted;
 import packets.PcapPacket;
 import packets.Session;
@@ -76,4 +78,5 @@ public class MostwantedEventCreator {
         }
         return result;
     }
+
 }

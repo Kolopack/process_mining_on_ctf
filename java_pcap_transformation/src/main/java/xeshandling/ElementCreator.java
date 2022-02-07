@@ -2,6 +2,7 @@ package xeshandling;
 
 import constants.HTTPConstants;
 import constants.XESConstants;
+import creation.MostwantedService;
 import org.w3c.dom.Element;
 import packets.PcapPacket;
 
@@ -71,7 +72,7 @@ public class ElementCreator {
      * @param xesManager instance of XESManager
      * @return ArrayList containing the Elements found and created out of the Packet-list
      */
-    public static ArrayList<Element> getEventsOfPSHACK(List<PcapPacket> packets, XESManager xesManager) {
+    public static ArrayList<Element> getEventsOfPSHACK(List<PcapPacket> packets, XESManager xesManager, InetAddress serviceIP) {
 
         ArrayList<Element> result = new ArrayList<>();
         for (PcapPacket packet : packets) {
@@ -81,7 +82,7 @@ public class ElementCreator {
             }
 
         }
-        ArrayList<Element> pshattacks = getPSHACKEvents(packets, xesManager);
+        ArrayList<Element> pshattacks = getPSHACKEvents(packets, xesManager, serviceIP);
         result.addAll(pshattacks);
         return result;
     }
@@ -182,22 +183,36 @@ public class ElementCreator {
      * @param xesManager instance of XESManager
      * @return ArrayList containing all created DOM-Elements which indicate PSH-ACK-attacks
      */
-    private static ArrayList<Element> getPSHACKEvents(List<PcapPacket> packets, XESManager xesManager) {
+    private static ArrayList<Element> getPSHACKEvents(List<PcapPacket> packets, XESManager xesManager, InetAddress serviceIP) {
         ArrayList<Element> result=new ArrayList<>();
 
         for(int i=0; i<packets.size();++i) {
             PcapPacket current=packets.get(i);
+            boolean isAttack=false;
+            if(!current.getIpSender().equals(serviceIP)) {
+                isAttack=true;
+            }
             if(current.getTcpFlags().get("PSH") && current.getTcpFlags().get("ACK")) {
                 if(i+1!= packets.size()) {
                     PcapPacket next=packets.get(i+1);
                     if(next.getTcpFlags().get("ACK") && !next.getTcpFlags().get("PSH")) {
-                        Element element=createPSHACKEvent(current,next,xesManager);
-                        result.add(element);
+                        ArrayList<Element> attackElements=new ArrayList<>();
+                        Element element=createPSHACKEvent(current,xesManager);
+                        attackElements.add(element);
+                        Element receivedACKElement= MostwantedService.getReceiveAckElement(next, xesManager);
+                        attackElements.add(receivedACKElement);
+                        Element attackElement=MostwantedService.getMostwantedAttackElement(attackElements, xesManager, isAttack);
+                        result.add(attackElement);
                     }
                 }
                 else {
-                    Element element=createPSHACKEvent(current,null,xesManager);
-                    result.add(element);
+                    ArrayList<Element> attackElements=new ArrayList<>();
+                    Element element=createPSHACKEvent(current,xesManager);
+                    attackElements.add(element);
+                    Element receivedACKElement= MostwantedService.getReceiveAckElement(null, xesManager);
+                    attackElements.add(receivedACKElement);
+                    Element attackElement=MostwantedService.getMostwantedAttackElement(attackElements, xesManager, isAttack);
+                    result.add(attackElement);
                 }
             }
         }
@@ -207,34 +222,22 @@ public class ElementCreator {
     /**
      * This method is called by the getPSHACKEvents-method for building the Java DOM-elements
      * @param pshack PcapPacket which contains a PSH
-     * @param ack PcapPacket which contains an ACK to this PSH
      * @param xesManager instance of XESManager
      * @return DOM-element representing one PSHACK-attack
      */
-    private static Element createPSHACKEvent(PcapPacket pshack, PcapPacket ack, XESManager xesManager) {
+    private static Element createPSHACKEvent(PcapPacket pshack, XESManager xesManager) {
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
         Element receiver=getDestinationOrReceiver(pshack,xesManager);
 
-        HashMap<String, String> ackParameters=new HashMap<>();
-        ackParameters.put(XESConstants.KEY_STRING,XESConstants.ACKRETURNED_STRING);
-        if(ack==null) {
-            ackParameters.put(XESConstants.VALUE_STRING,"false");
-        }
-        else {
-            ackParameters.put(XESConstants.VALUE_STRING, "true");
-        }
-        Element ackElement=xesManager.createSimpleElement(XESConstants.BOOLEAN_ARGUMENT,ackParameters);
-
         Element dateElement;
-        dateElement = getDateElement(Objects.requireNonNullElse(ack, pshack), xesManager);
+        dateElement = getDateElement(pshack, xesManager);
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(sender);
         elements.add(receiver);
-        elements.add(ackElement);
         elements.add(dateElement);
 
-        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
+        Element result=xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,elements);
         result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
         result.setAttribute(XESConstants.VALUE_STRING, "PSH ACK");
         return result;
@@ -328,7 +331,7 @@ public class ElementCreator {
      * @param xesManager Instance of XESManager
      * @return created Java DOM-Element
      */
-    private static Element getDateElement(PcapPacket packet, XESManager xesManager) {
+    public static Element getDateElement(PcapPacket packet, XESManager xesManager) {
         HashMap<String, String> dateArguments = new HashMap<>();
         dateArguments.put(XESConstants.KEY_STRING, XESConstants.TIME_NAME);
         dateArguments.put(XESConstants.VALUE_STRING, packet.getArrivalTime().toString());

@@ -77,4 +77,16 @@ public class XESConstants {
      * Constant for setting the concept:name-value of a mostwanted-trace
      */
     public static final String MOSTWANTED_TRACE_NAME="Attacking the mostwanted service";
+    /**
+     * Constant for indicating an Receiving ACK-element
+     */
+    public static final String RECEIVE_ACK_NAME="Receive ACK";
+    /**
+     * Constant for the event-element in Mostwanted for executing an attack
+     */
+    public static final String EXECUTING_ATTACK_NAME="Executing attack";
+    /**
+     * Constant for naming the answering and interacting of the (Mostwanted)-service to the PSHACK-attacks
+     */
+    public static final String INTERACTING_TO_ATTACK="Answering to attack";
 }
