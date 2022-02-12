@@ -73,4 +73,8 @@ public class XESConstants {
      * Constant for setting the concept:name-value of an overcovert-trace
      */
     public static final String OVERCOVERT_TRACE_NAME="Attacking the overcovert service";
+    /**
+     * Constant for creating org-resource-tags, needed for the social network miner
+     */
+    public static final String ORG_RESOURCE="org:resource";
 }

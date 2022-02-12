@@ -45,8 +45,10 @@ public class ElementCreator {
         Element conceptElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, conceptNameArguments);
 
         Element initiatorElement = null;
+        Element resourceElement=null;
         if (firstPacketHandshake != null) {
             initiatorElement = getRequesterOrInitiator(firstPacketHandshake, xesManager, XESConstants.INITIATOR_STRING);
+            resourceElement=getRequesterOrInitiator(firstPacketHandshake,xesManager, XESConstants.ORG_RESOURCE);
         }
         Element dateElement = null;
         if (lastPacketHandshake != null) {
@@ -57,6 +59,9 @@ public class ElementCreator {
         ArrayList<Element> elements = new ArrayList<>();
         elements.add(conceptElement);
 
+        if(resourceElement!=null) {
+            elements.add(resourceElement);
+        }
         if (initiatorElement != null) {
             elements.add(initiatorElement);
         }
@@ -134,10 +139,13 @@ public class ElementCreator {
 
         Element requester = getRequesterOrInitiator(packet, xesManager, XESConstants.INITIATOR_STRING);
 
+        Element resource=getRequesterOrInitiator(packet,xesManager,XESConstants.ORG_RESOURCE);
+
         Element date = getDateElement(packet, xesManager);
 
         ArrayList<Element> elements = new ArrayList<>();
         elements.add(conceptName);
+        elements.add(resource);
         elements.add(httpMethodElement);
         elements.add(uriElement);
         elements.add(requester);
@@ -167,6 +175,8 @@ public class ElementCreator {
 
         Element requestor=getRequesterOrInitiator(packet,xesManager,XESConstants.REQUESTER_STRING);
 
+        Element resource=getRequesterOrInitiator(packet,xesManager,XESConstants.ORG_RESOURCE);
+
         //TODO: flagstring
         System.out.println("Here read out flagstring");
 
@@ -174,6 +184,7 @@ public class ElementCreator {
 
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(conceptName);
+        elements.add(resource);
         elements.add(httpMethodElement);
         elements.add(uriElement);
         elements.add(requestor);
@@ -224,6 +235,8 @@ public class ElementCreator {
 
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
+        Element resource=getRequesterOrInitiator(pshack,xesManager,XESConstants.ORG_RESOURCE);
+
         Element receiver=getDestinationOrReceiver(pshack,xesManager);
 
         HashMap<String, String> ackParameters=new HashMap<>();
@@ -240,6 +253,7 @@ public class ElementCreator {
         dateElement = getDateElement(Objects.requireNonNullElse(ack, pshack), xesManager);
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(conceptName);
+        elements.add(resource);
         elements.add(sender);
         elements.add(receiver);
         elements.add(ackElement);
@@ -385,10 +399,13 @@ public class ElementCreator {
 
         Element sender=getRequesterOrInitiator(packet,xesManager,XESConstants.SENDER_STRING);
 
+        Element resource=getRequesterOrInitiator(packet,xesManager,XESConstants.ORG_RESOURCE);
+
         Element timestamp=getDateElement(packet,xesManager);
 
         ArrayList<Element> elements=new ArrayList<>();
         elements.add(conceptName);
+        elements.add(resource);
         elements.add(sender);
         elements.add(timestamp);
 
