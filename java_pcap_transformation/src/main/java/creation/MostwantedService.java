@@ -60,6 +60,12 @@ public class MostwantedService extends AbstractXESService implements IService {
     public static Element getReceiveAckElement(PcapPacket packet, XESManager xesManager) {
         ArrayList<Element> children=new ArrayList<>();
 
+        HashMap<String, String> conceptParameters=new HashMap<>();
+        conceptParameters.put(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
+        conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.RECEIVE_ACK_NAME);
+        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
+        children.add(conceptElement);
+
         HashMap<String, String> ackParameters=new HashMap<>();
         ackParameters.put(XESConstants.KEY_STRING,XESConstants.ACKRETURNED_STRING);
         if(packet==null) {
@@ -75,7 +81,8 @@ public class MostwantedService extends AbstractXESService implements IService {
             children.add(dateElement);
         }
 
-        Element result= xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,children);
+        //Element result= xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,children);
+        Element result= xesManager.createNestedElement("list",children);
         result.setAttribute(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
         result.setAttribute(XESConstants.VALUE_STRING,XESConstants.RECEIVE_ACK_NAME);
         return result;

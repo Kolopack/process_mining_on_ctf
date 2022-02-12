@@ -49,8 +49,13 @@ public class ElementCreator {
             dateElement = getDateElement(lastPacketHandshake, xesManager);
         }
 
-
         ArrayList<Element> elements = new ArrayList<>();
+
+        HashMap<String, String> conceptParameters=new HashMap<>();
+        conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        conceptParameters.put(XESConstants.VALUE_STRING, conceptName);
+        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
+        elements.add(conceptElement);
 
         if (initiatorElement != null) {
             elements.add(initiatorElement);
@@ -118,9 +123,13 @@ public class ElementCreator {
         if(httpMethod.equals(HTTPConstants.POST)) {
             return getPostSubmitEvent(httpMethod,packet,xesManager);
         }
+        HashMap<String, String> conceptArguments=new HashMap<>();
+        conceptArguments.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        conceptArguments.put(XESConstants.VALUE_STRING, "HTTP-Request");
+        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptArguments);
+
         HashMap<String, String> methodArguments = new HashMap<>();
         methodArguments.put(XESConstants.KEY_STRING, "HTTP-method");
-
         methodArguments.put(XESConstants.VALUE_STRING, httpMethod);
         Element httpMethodElement = xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT, methodArguments);
 
@@ -131,6 +140,7 @@ public class ElementCreator {
         Element date = getDateElement(packet, xesManager);
 
         ArrayList<Element> elements = new ArrayList<>();
+        elements.add(conceptElement);
         elements.add(httpMethodElement);
         elements.add(uriElement);
         elements.add(requester);
@@ -197,6 +207,18 @@ public class ElementCreator {
                     PcapPacket next=packets.get(i+1);
                     if(next.getTcpFlags().get("ACK") && !next.getTcpFlags().get("PSH")) {
                         ArrayList<Element> attackElements=new ArrayList<>();
+
+                        HashMap<String, String> conceptParameters=new HashMap<>();
+                        conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+                        if(isAttack) {
+                            conceptParameters.put(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
+                        }
+                        else {
+                            conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
+                        }
+                        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
+                        attackElements.add(conceptElement);
+
                         Element element=createPSHACKEvent(current,xesManager);
                         attackElements.add(element);
                         Element receivedACKElement= MostwantedService.getReceiveAckElement(next, xesManager);
@@ -207,6 +229,18 @@ public class ElementCreator {
                 }
                 else {
                     ArrayList<Element> attackElements=new ArrayList<>();
+
+                    HashMap<String, String> conceptParameters=new HashMap<>();
+                    conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+                    if(isAttack) {
+                        conceptParameters.put(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
+                    }
+                    else {
+                        conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
+                    }
+                    Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
+                    attackElements.add(conceptElement);
+
                     Element element=createPSHACKEvent(current,xesManager);
                     attackElements.add(element);
                     Element receivedACKElement= MostwantedService.getReceiveAckElement(null, xesManager);
@@ -226,6 +260,11 @@ public class ElementCreator {
      * @return DOM-element representing one PSHACK-attack
      */
     private static Element createPSHACKEvent(PcapPacket pshack, XESManager xesManager) {
+        HashMap<String, String> conceptParameters=new HashMap<>();
+        conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
+        conceptParameters.put(XESConstants.VALUE_STRING, "PSH ACK");
+        Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
+
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
 
         Element receiver=getDestinationOrReceiver(pshack,xesManager);
@@ -233,11 +272,13 @@ public class ElementCreator {
         Element dateElement;
         dateElement = getDateElement(pshack, xesManager);
         ArrayList<Element> elements=new ArrayList<>();
+        elements.add(conceptElement);
         elements.add(sender);
         elements.add(receiver);
         elements.add(dateElement);
 
-        Element result=xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,elements);
+        //Element result=xesManager.createNestedElement(""XESConstants.STRING_ARGUMENT"",elements);
+        Element result=xesManager.createNestedElement("list",elements);
         result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
         result.setAttribute(XESConstants.VALUE_STRING, "PSH ACK");
         return result;
