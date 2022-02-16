@@ -84,9 +84,9 @@ public class XESConstants {
     /**
      * Constant for the event-element in Mostwanted for executing an attack
      */
-    public static final String EXECUTING_ATTACK_NAME="Executing attack";
+    public static final String EXECUTING_ATTACK_NAME="Executing PSH ACK-attack";
     /**
      * Constant for naming the answering and interacting of the (Mostwanted)-service to the PSHACK-attacks
      */
-    public static final String INTERACTING_TO_ATTACK="Answering to attack";
+    public static final String INTERACTING_TO_ATTACK="Answering to PSH ACK-attack";
 }

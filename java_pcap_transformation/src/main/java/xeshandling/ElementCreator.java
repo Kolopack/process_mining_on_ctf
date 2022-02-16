@@ -206,9 +206,8 @@ public class ElementCreator {
                 if(i+1!= packets.size()) {
                     PcapPacket next=packets.get(i+1);
                     if(next.getTcpFlags().get("ACK") && !next.getTcpFlags().get("PSH")) {
-                        ArrayList<Element> attackElements=new ArrayList<>();
 
-                        HashMap<String, String> conceptParameters=new HashMap<>();
+                        /*HashMap<String, String> conceptParameters=new HashMap<>();
                         conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
                         if(isAttack) {
                             conceptParameters.put(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
@@ -217,20 +216,16 @@ public class ElementCreator {
                             conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
                         }
                         Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
-                        attackElements.add(conceptElement);
+                        attackElements.add(conceptElement);*/
 
-                        Element element=createPSHACKEvent(current,xesManager);
-                        attackElements.add(element);
+                        Element element=createPSHACKEvent(current,xesManager, isAttack);
+                        result.add(element);
                         Element receivedACKElement= MostwantedService.getReceiveAckElement(next, xesManager);
-                        attackElements.add(receivedACKElement);
-                        Element attackElement=MostwantedService.getMostwantedAttackElement(attackElements, xesManager, isAttack);
-                        result.add(attackElement);
+                        result.add(receivedACKElement);
                     }
                 }
                 else {
-                    ArrayList<Element> attackElements=new ArrayList<>();
-
-                    HashMap<String, String> conceptParameters=new HashMap<>();
+                    /*HashMap<String, String> conceptParameters=new HashMap<>();
                     conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
                     if(isAttack) {
                         conceptParameters.put(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
@@ -239,14 +234,12 @@ public class ElementCreator {
                         conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
                     }
                     Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
-                    attackElements.add(conceptElement);
+                    attackElements.add(conceptElement);*/
 
-                    Element element=createPSHACKEvent(current,xesManager);
-                    attackElements.add(element);
+                    Element element=createPSHACKEvent(current,xesManager, isAttack);
+                    result.add(element);
                     Element receivedACKElement= MostwantedService.getReceiveAckElement(null, xesManager);
-                    attackElements.add(receivedACKElement);
-                    Element attackElement=MostwantedService.getMostwantedAttackElement(attackElements, xesManager, isAttack);
-                    result.add(attackElement);
+                    result.add(receivedACKElement);
                 }
             }
         }
@@ -259,10 +252,16 @@ public class ElementCreator {
      * @param xesManager instance of XESManager
      * @return DOM-element representing one PSHACK-attack
      */
-    private static Element createPSHACKEvent(PcapPacket pshack, XESManager xesManager) {
+    private static Element createPSHACKEvent(PcapPacket pshack, XESManager xesManager, boolean isAttack) {
         HashMap<String, String> conceptParameters=new HashMap<>();
         conceptParameters.put(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
-        conceptParameters.put(XESConstants.VALUE_STRING, "PSH ACK");
+        if(isAttack) {
+            conceptParameters.put(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
+        }
+        else{
+            conceptParameters.put(XESConstants.VALUE_STRING,XESConstants.INTERACTING_TO_ATTACK);
+        }
+
         Element conceptElement=xesManager.createSimpleElement(XESConstants.STRING_ARGUMENT,conceptParameters);
 
         Element sender=getRequesterOrInitiator(pshack,xesManager,XESConstants.SENDER_STRING);
@@ -277,10 +276,14 @@ public class ElementCreator {
         elements.add(receiver);
         elements.add(dateElement);
 
-        //Element result=xesManager.createNestedElement(""XESConstants.STRING_ARGUMENT"",elements);
-        Element result=xesManager.createNestedElement("list",elements);
+        Element result=xesManager.createNestedElement(XESConstants.EVENT_STRING,elements);
         result.setAttribute(XESConstants.KEY_STRING, XESConstants.CONCEPT_NAME);
-        result.setAttribute(XESConstants.VALUE_STRING, "PSH ACK");
+        if(isAttack) {
+            result.setAttribute(XESConstants.VALUE_STRING, XESConstants.EXECUTING_ATTACK_NAME);
+        }
+        else{
+            result.setAttribute(XESConstants.VALUE_STRING, XESConstants.INTERACTING_TO_ATTACK);
+        }
         return result;
     }
 

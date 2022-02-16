@@ -81,8 +81,8 @@ public class MostwantedService extends AbstractXESService implements IService {
             children.add(dateElement);
         }
 
-        //Element result= xesManager.createNestedElement(XESConstants.STRING_ARGUMENT,children);
-        Element result= xesManager.createNestedElement("list",children);
+        Element result= xesManager.createNestedElement(XESConstants.EVENT_STRING,children);
+        //Element result= xesManager.createNestedElement("list",children);
         result.setAttribute(XESConstants.KEY_STRING,XESConstants.CONCEPT_NAME);
         result.setAttribute(XESConstants.VALUE_STRING,XESConstants.RECEIVE_ACK_NAME);
         return result;
